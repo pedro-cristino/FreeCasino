@@ -1,0 +1,171 @@
+<div class="baccarat-container">
+  <!-- Stats -->
+  <div class="stats-panel">
+    <div class="stat">
+      <span class="stat-label">Balance</span>
+      <span class="stat-value balance">${{ gameState().balance }}</span>
+    </div>
+    <div class="stats-title">🃏 BACCARAT</div>
+    <div class="stats-right">
+      <div class="stat">
+        <span class="stat-label">Parties</span>
+        <span class="stat-value">{{ gamesPlayed() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Victoires</span>
+        <span class="stat-value wins">{{ gamesWon() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Défaites</span>
+        <span class="stat-value losses">{{ gamesLost() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Profit/Perte</span>
+        <span class="stat-value" [class.profit]="profitLoss() > 0" [class.loss]="profitLoss() < 0">
+          {{ profitLoss() >= 0 ? '+' : '' }}${{ profitLoss() }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message -->
+  <div class="message-display">{{ gameState().message }}</div>
+
+  <!-- ── Betting Phase ───────────────────────────────────────────────────── -->
+  <div class="betting-phase" *ngIf="gameState().phase === BaccaratPhase.BETTING">
+    <div class="bet-grid">
+
+      <!-- Player -->
+      <div class="bet-box bet-player">
+        <div class="bet-box-header">
+          <h3>Joueur</h3>
+          <span class="payout-label">Paye 1:1</span>
+        </div>
+        <div class="bet-amount">${{ betInputs.player }}</div>
+        <div class="chip-buttons">
+          <button class="chip-btn chip-10" (click)="addChip('player', 10)">$10</button>
+          <button class="chip-btn chip-25" (click)="addChip('player', 25)">$25</button>
+          <button class="chip-btn chip-50" (click)="addChip('player', 50)">$50</button>
+          <button class="chip-btn chip-100" (click)="addChip('player', 100)">$100</button>
+          <button class="chip-btn chip-allin" (click)="allIn('player')">All in</button>
+        </div>
+        <button class="clear-btn" (click)="clearBet('player')" *ngIf="betInputs.player > 0">Effacer</button>
+      </div>
+
+      <!-- Tie -->
+      <div class="bet-box bet-tie">
+        <div class="bet-box-header">
+          <h3>Égalité</h3>
+          <span class="payout-label">Paye 8:1</span>
+        </div>
+        <div class="bet-amount">${{ betInputs.tie }}</div>
+        <div class="chip-buttons">
+          <button class="chip-btn chip-10" (click)="addChip('tie', 10)">$10</button>
+          <button class="chip-btn chip-25" (click)="addChip('tie', 25)">$25</button>
+          <button class="chip-btn chip-50" (click)="addChip('tie', 50)">$50</button>
+          <button class="chip-btn chip-100" (click)="addChip('tie', 100)">$100</button>
+          <button class="chip-btn chip-allin" (click)="allIn('tie')">All in</button>
+        </div>
+        <button class="clear-btn" (click)="clearBet('tie')" *ngIf="betInputs.tie > 0">Effacer</button>
+      </div>
+
+      <!-- Banker -->
+      <div class="bet-box bet-banker">
+        <div class="bet-box-header">
+          <h3>Banquier</h3>
+          <span class="payout-label">Paye 0.95:1</span>
+        </div>
+        <div class="bet-amount">${{ betInputs.banker }}</div>
+        <div class="chip-buttons">
+          <button class="chip-btn chip-10" (click)="addChip('banker', 10)">$10</button>
+          <button class="chip-btn chip-25" (click)="addChip('banker', 25)">$25</button>
+          <button class="chip-btn chip-50" (click)="addChip('banker', 50)">$50</button>
+          <button class="chip-btn chip-100" (click)="addChip('banker', 100)">$100</button>
+          <button class="chip-btn chip-allin" (click)="allIn('banker')">All in</button>
+        </div>
+        <button class="clear-btn" (click)="clearBet('banker')" *ngIf="betInputs.banker > 0">Effacer</button>
+      </div>
+    </div>
+
+    <button class="deal-btn" [disabled]="!canDeal()" (click)="deal()">
+      Distribuer — Mise totale : ${{ totalBetInput() }}
+    </button>
+  </div>
+
+  <!-- ── Game Table ──────────────────────────────────────────────────────── -->
+  <div class="game-table" *ngIf="gameState().phase !== BaccaratPhase.BETTING">
+    <div class="hands-container">
+
+      <!-- Banker hand -->
+      <div class="hand-section" [class.winner]="gameState().result === 'banker'" [class.loser]="gameState().result !== null && gameState().result !== 'banker' && gameState().result !== 'tie'">
+        <div class="hand-header">
+          <h2>Banquier</h2>
+          <span class="value-badge" *ngIf="gameState().bankerCards.length > 0">{{ handValue(gameState().bankerCards) }}</span>
+        </div>
+        <div class="cards">
+          <div *ngFor="let card of gameState().bankerCards" class="card">
+            <div class="card-content" [class.red]="getCardColor(card.suit) === 'red'">
+              <div class="card-rank">{{ card.rank }}</div>
+              <div class="card-suit">{{ card.suit }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="bet-placed" *ngIf="gameState().bets.banker > 0">Mise : ${{ gameState().bets.banker }}</div>
+        <div class="winner-badge" *ngIf="gameState().result === 'banker'">GAGNE</div>
+      </div>
+
+      <div class="vs-divider">VS</div>
+
+      <!-- Player hand -->
+      <div class="hand-section" [class.winner]="gameState().result === 'player'" [class.loser]="gameState().result !== null && gameState().result !== 'player' && gameState().result !== 'tie'">
+        <div class="hand-header">
+          <h2>Joueur</h2>
+          <span class="value-badge" *ngIf="gameState().playerCards.length > 0">{{ handValue(gameState().playerCards) }}</span>
+        </div>
+        <div class="cards">
+          <div *ngFor="let card of gameState().playerCards" class="card">
+            <div class="card-content" [class.red]="getCardColor(card.suit) === 'red'">
+              <div class="card-rank">{{ card.rank }}</div>
+              <div class="card-suit">{{ card.suit }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="bet-placed" *ngIf="gameState().bets.player > 0">Mise : ${{ gameState().bets.player }}</div>
+        <div class="winner-badge" *ngIf="gameState().result === 'player'">GAGNE</div>
+      </div>
+    </div>
+
+    <!-- Tie result -->
+    <div class="tie-result" *ngIf="gameState().result === 'tie'">
+      <span class="tie-badge">ÉGALITÉ</span>
+      <span *ngIf="gameState().bets.tie > 0" class="tie-bet">Mise égalité : ${{ gameState().bets.tie }}</span>
+    </div>
+
+    <!-- New Round -->
+    <div class="new-round" *ngIf="gameState().phase === BaccaratPhase.RESULT">
+      <button class="new-round-btn" [disabled]="isResolving" (click)="newRound()">Nouvelle Partie</button>
+      <button class="replay-btn" [disabled]="isResolving || !canReplay()" (click)="replayLastHand()">Rejouer la main</button>
+    </div>
+  </div>
+
+  <!-- ── History ─────────────────────────────────────────────────────────── -->
+  <div class="history-panel" *ngIf="gameState().history.length > 0">
+    <h2>Historique (10 dernières parties)</h2>
+    <div class="history-list">
+      <div *ngFor="let entry of gameState().history" class="history-entry">
+        <span class="history-time">{{ entry.timestamp | date: 'HH:mm' }}</span>
+        <span class="result-badge"
+              [class.result-player]="entry.result === 'player'"
+              [class.result-banker]="entry.result === 'banker'"
+              [class.result-tie]="entry.result === 'tie'">
+          {{ getResultLabel(entry.result) }}
+        </span>
+        <span class="history-bet">Mise : ${{ entry.bets.player + entry.bets.banker + entry.bets.tie }}</span>
+        <span class="history-profit" [class.profit]="entry.profit > 0" [class.loss]="entry.profit < 0">
+          {{ entry.profit >= 0 ? '+' : '' }}${{ entry.profit }}
+        </span>
+        <span class="history-balance">Balance : ${{ entry.balance }}</span>
+      </div>
+    </div>
+  </div>
+</div>

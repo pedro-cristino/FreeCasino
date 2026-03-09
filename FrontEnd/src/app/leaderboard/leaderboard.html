@@ -1,0 +1,36 @@
+<div class="leaderboard-container">
+  <h1 class="title">🏆 Leaderboard</h1>
+
+  <div class="loading" *ngIf="loading()">Chargement...</div>
+
+  <div class="empty" *ngIf="!loading() && entries().length === 0">
+    Aucun score enregistré pour le moment.
+  </div>
+
+  <table class="leaderboard-table" *ngIf="!loading() && entries().length > 0">
+    <thead>
+      <tr>
+        <th class="col-rank">#</th>
+        <th class="col-user">Joueur</th>
+        <th class="col-score">Score</th>
+        <th class="col-date">Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let entry of entries(); let i = index"
+          [class.gold]="i === 0"
+          [class.silver]="i === 1"
+          [class.bronze]="i === 2">
+        <td class="col-rank">
+          <span *ngIf="i === 0">🥇</span>
+          <span *ngIf="i === 1">🥈</span>
+          <span *ngIf="i === 2">🥉</span>
+          <span *ngIf="i > 2">{{ i + 1 }}</span>
+        </td>
+        <td class="col-user">{{ entry.username }}</td>
+        <td class="col-score">${{ entry.score }}</td>
+        <td class="col-date">{{ entry.savedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

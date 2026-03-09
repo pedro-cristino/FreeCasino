@@ -1,0 +1,393 @@
+/* ── Wrapper ─────────────────────────────────────────────────────────────── */
+
+.crash-container {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 20%, #1e5534 0%, #0e2a1a 55%, #060f09 100%);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
+}
+.stats-right {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.stats-title {
+  text-align: center;
+  font-size: 1.7rem;
+  margin: 0 0 14px;
+  color: #d4af37;
+  font-weight: 900;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  text-shadow: 0 0 24px rgba(212, 175, 55, 0.5);
+}
+
+/* ── Stats ─────────────────────────────────────────────────────────────────── */
+
+.stats-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 12px;
+    padding: 12px 28px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.stat-label { font-size: 0.65rem; color: rgba(255, 255, 255, 0.45); text-transform: uppercase; letter-spacing: 1px; }
+.stat-value { font-size: 1.1rem; font-weight: 700; color: #fff; }
+.stat-value.balance { color: #2ecc71; }
+.stat-value.wins    { color: #2ecc71; }
+.stat-value.losses  { color: #e74c3c; }
+.stat-value.profit  { color: #2ecc71; }
+.stat-value.loss    { color: #e74c3c; }
+
+/* ── Layout ─────────────────────────────────────────────────────────────────── */
+
+.game-layout {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+  align-items: flex-start;
+}
+
+/* ── Controls ───────────────────────────────────────────────────────────────── */
+
+.controls-panel {
+  width: 230px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Recent crash badges */
+.recent-crashes { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.crash-badge {
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* Bet section */
+.control-section {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.bet-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-label {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.bet-amount { font-size: 1.3rem; font-weight: 900; color: #fff; min-width: 55px; }
+
+.clear-btn {
+  margin-left: auto;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid rgba(231, 76, 60, 0.5);
+  color: #e74c3c;
+  border-radius: 7px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.78rem;
+  transition: all 0.13s;
+}
+
+.clear-btn:hover:not(:disabled) { border-color: #e74c3c; background: rgba(231, 76, 60, 0.15); }
+.clear-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.chip-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  padding: 9px 0;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.13s;
+}
+
+.chip:hover { border-color: rgba(212, 175, 55, 0.5); color: #d4af37; }
+.chip:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.chip.chip-allin {
+  background: linear-gradient(135deg, #5e1a7a, #8622aa);
+  border-color: rgba(197, 91, 245, 0.5);
+  color: white;
+  font-size: 0.7rem;
+  grid-column: span 3;
+}
+
+.chip.chip-allin:hover { filter: brightness(1.12); border-color: #c55bf5; }
+
+.balance-hint { font-size: 0.72rem; color: rgba(255, 255, 255, 0.3); text-align: right; }
+
+/* Fly button */
+.fly-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #d4af37, #b8961f);
+  color: #1a1a1a;
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.45);
+  transition: transform 0.1s, box-shadow 0.1s;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.fly-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 26px rgba(212, 175, 55, 0.65);
+}
+
+.fly-btn:active:not(:disabled) { transform: translateY(0); }
+.fly-btn:disabled { background: #3a3a3a; color: #666; cursor: not-allowed; box-shadow: none; }
+
+/* Replay button */
+.replay-btn {
+  width: 100%;
+  padding: 11px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #e67e22, #d35400);
+  color: white;
+  transition: transform 0.1s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.replay-btn:hover { transform: translateY(-1px); }
+
+/* Live panel (FLYING) */
+.live-panel {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.live-mult {
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: white;
+  font-family: monospace;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+  transition: color 0.2s;
+}
+
+.live-mult.cashed { color: #2ecc71; text-shadow: 0 0 24px rgba(46, 204, 113, 0.7); }
+
+.live-bet { font-size: 0.85rem; color: rgba(255, 255, 255, 0.45); }
+
+/* Cash out button */
+.cashout-btn {
+  width: 100%;
+  padding: 14px 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #27ae60, #1e8449);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  animation: cashPulse 1s ease-in-out infinite;
+  transition: transform 0.1s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.cashout-btn:hover { animation: none; transform: scale(1.03); filter: brightness(1.1); }
+.cashout-btn:active { transform: scale(0.98); }
+
+@keyframes cashPulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(39, 174, 96, 0.4); }
+  50%       { box-shadow: 0 4px 32px rgba(39, 174, 96, 0.9); transform: scale(1.02); }
+}
+
+.cashout-amount { font-size: 1.2rem; font-weight: 900; }
+
+/* Cashed badge */
+.cashed-badge {
+  background: rgba(46, 204, 113, 0.12);
+  border: 1px solid rgba(46, 204, 113, 0.4);
+  color: #2ecc71;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Result banners */
+.result-banner { border-radius: 10px; padding: 16px; text-align: center; }
+
+.win-banner {
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.2), rgba(30, 132, 73, 0.2));
+  border: 1px solid rgba(46, 204, 113, 0.4);
+  color: #2ecc71;
+  animation: winPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lose-banner {
+  background: linear-gradient(135deg, rgba(192, 57, 43, 0.2), rgba(150, 40, 27, 0.2));
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  color: #e74c3c;
+}
+
+@keyframes winPop {
+  0%   { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+.result-title  { font-size: 1.5rem; font-weight: 900; margin-bottom: 4px; }
+.result-detail { font-size: 0.95rem; opacity: 0.85; }
+
+/* Action row */
+.action-row { display: flex; gap: 8px; }
+
+.play-again-btn {
+  flex: 1;
+  padding: 13px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #d4af37, #b8961f);
+  color: #1a1a1a;
+  transition: transform 0.1s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.play-again-btn:hover { transform: translateY(-1px); }
+
+.replay-btn-sm {
+  padding: 13px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #e67e22, #d35400);
+  color: white;
+  transition: transform 0.1s;
+}
+
+.replay-btn-sm:hover { transform: translateY(-1px); }
+
+/* ── Canvas ─────────────────────────────────────────────────────────────────── */
+
+.canvas-panel {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.crash-canvas {
+  border-radius: 14px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  max-width: 100%;
+}
+
+/* ── History ────────────────────────────────────────────────────────────────── */
+
+.history-panel {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 14px;
+  padding: 16px 20px;
+}
+
+.history-panel h2 {
+  text-align: center;
+  margin-bottom: 12px;
+  color: #d4af37;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.history-list { display: flex; flex-direction: column; gap: 5px; }
+
+.history-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border-left: 3px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.history-entry.history-win  { border-left-color: #2ecc71; }
+.history-entry.history-lose { border-left-color: #e74c3c; }
+
+.history-time    { color: rgba(255, 255, 255, 0.35); font-size: 0.75rem; }
+.history-icon    { font-size: 0.95rem; }
+.history-bet     { color: rgba(255, 255, 255, 0.5); }
+.history-detail  { color: rgba(255, 255, 255, 0.4); font-size: 0.8rem; }
+.history-balance { color: rgba(255, 255, 255, 0.5); margin-left: auto; }
+.history-profit.profit { color: #2ecc71; font-weight: 700; }
+.history-profit.loss   { color: #e74c3c; font-weight: 700; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+
+@media (max-width: 800px) {
+  .game-layout { flex-direction: column; }
+  .controls-panel { width: 100%; }
+  .crash-canvas { width: 100%; height: auto; }
+}

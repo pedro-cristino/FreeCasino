@@ -1,0 +1,341 @@
+<div class="roulette-container">
+  <!-- Stats -->
+  <div class="stats-panel">
+    <div class="stat"><span class="stat-label">Balance</span><span class="stat-value balance">${{ gameState().balance }}</span></div>
+    <div class="stats-title">🎡 ROULETTE</div>
+    <div class="stats-right">
+      <div class="stat"><span class="stat-label">Parties</span><span class="stat-value">{{ gamesPlayed() }}</span></div>
+      <div class="stat"><span class="stat-label">Victoires</span><span class="stat-value wins">{{ gamesWon() }}</span></div>
+      <div class="stat"><span class="stat-label">Défaites</span><span class="stat-value losses">{{ gamesLost() }}</span></div>
+      <div class="stat">
+        <span class="stat-label">Profit/Perte</span>
+        <span class="stat-value" [class.profit]="profitLoss() > 0" [class.loss]="profitLoss() < 0">
+          {{ profitLoss() >= 0 ? '+' : '' }}${{ profitLoss() }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message -->
+  <div class="message-display">{{ gameState().message }}</div>
+
+  <!-- Chip selector -->
+  <div class="chip-selector" *ngIf="gameState().phase === RoulettePhase.BETTING">
+    <span class="chip-label">Mise :</span>
+    <button *ngFor="let val of CHIP_VALUES" class="chip"
+            [class.selected]="selectedChip === val && !allInSelected"
+            (click)="selectChip(val)">
+      ${{ val }}
+    </button>
+    <button class="chip chip-allin" [class.selected]="allInSelected" (click)="selectAllIn()">
+      All in
+    </button>
+    <button class="clear-btn" (click)="clearBets()" *ngIf="totalBet() > 0">
+      Effacer (${{ totalBet() }})
+    </button>
+    <span class="bet-hint">Clic droit = retirer une mise</span>
+  </div>
+
+  <!-- Table wrapper -->
+  <div class="table-wrapper">
+    <div class="table-overlay" *ngIf="isSpinning">
+      <div class="spinner"></div>
+      <p class="spinning-text">La bille tourne…</p>
+    </div>
+
+    <div class="roulette-table">
+
+      <!-- ── Fine grid: zero + numbers + splits + corners + col bets ── -->
+      <div class="table-main">
+
+        <!-- Zero -->
+        <div class="number-cell green zero-cell"
+             [class.result-cell]="gameState().result === 0"
+             [class.hover-hl]="isHighlighted(0)"
+             (click)="placeBet('n-0')"
+             (contextmenu)="removeBet('n-0', $event)"
+             (mouseenter)="setHovered('n-0')"
+             (mouseleave)="clearHovered()">
+          <span class="num">0</span>
+          <span class="bet-chip" *ngIf="getBetAmount('n-0') > 0">{{ getBetAmount('n-0') }}</span>
+        </div>
+
+        <!-- Numbers 1–36 -->
+        <div *ngFor="let cell of numberCells"
+             class="number-cell"
+             [class.red]="getColor(cell.num) === 'red'"
+             [class.black]="getColor(cell.num) === 'black'"
+             [class.result-cell]="gameState().result === cell.num"
+             [class.hover-hl]="isHighlighted(cell.num)"
+             [style.grid-column]="cell.gridCol"
+             [style.grid-row]="cell.gridRow"
+             (click)="placeBet('n-' + cell.num)"
+             (contextmenu)="removeBet('n-' + cell.num, $event)"
+             (mouseenter)="setHovered('n-' + cell.num)"
+             (mouseleave)="clearHovered()">
+          <span class="num">{{ cell.num }}</span>
+          <span class="bet-chip" *ngIf="getBetAmount('n-' + cell.num) > 0">
+            {{ getBetAmount('n-' + cell.num) }}
+          </span>
+        </div>
+
+        <!-- Horizontal splits -->
+        <div *ngFor="let z of hSplitZones"
+             class="bet-zone h-split"
+             [class.has-bet]="getBetAmount(z.key) > 0"
+             [class.winning-zone]="isWinningZone(z.key)"
+             [style.grid-column]="z.gridCol"
+             [style.grid-row]="z.gridRow"
+             [title]="z.label"
+             (click)="placeBet(z.key)"
+             (contextmenu)="removeBet(z.key, $event)"
+             (mouseenter)="setHovered(z.key)"
+             (mouseleave)="clearHovered()">
+          <span class="zone-chip" *ngIf="getBetAmount(z.key) > 0">{{ getBetAmount(z.key) }}</span>
+        </div>
+
+        <!-- Vertical splits -->
+        <div *ngFor="let z of vSplitZones"
+             class="bet-zone v-split"
+             [class.has-bet]="getBetAmount(z.key) > 0"
+             [class.winning-zone]="isWinningZone(z.key)"
+             [style.grid-column]="z.gridCol"
+             [style.grid-row]="z.gridRow"
+             [title]="z.label"
+             (click)="placeBet(z.key)"
+             (contextmenu)="removeBet(z.key, $event)"
+             (mouseenter)="setHovered(z.key)"
+             (mouseleave)="clearHovered()">
+          <span class="zone-chip" *ngIf="getBetAmount(z.key) > 0">{{ getBetAmount(z.key) }}</span>
+        </div>
+
+        <!-- Corners -->
+        <div *ngFor="let z of cornerZones"
+             class="bet-zone corner"
+             [class.has-bet]="getBetAmount(z.key) > 0"
+             [class.winning-zone]="isWinningZone(z.key)"
+             [style.grid-column]="z.gridCol"
+             [style.grid-row]="z.gridRow"
+             [title]="z.label"
+             (click)="placeBet(z.key)"
+             (contextmenu)="removeBet(z.key, $event)"
+             (mouseenter)="setHovered(z.key)"
+             (mouseleave)="clearHovered()">
+          <span class="zone-chip" *ngIf="getBetAmount(z.key) > 0">{{ getBetAmount(z.key) }}</span>
+        </div>
+
+        <!-- Column bets -->
+        <div class="col-bet"
+             style="grid-column: 26; grid-row: 1"
+             [class.has-bet]="getBetAmount('col-3') > 0"
+             [class.winning-zone]="isWinningZone('col-3')"
+             (click)="placeBet('col-3')"
+             (contextmenu)="removeBet('col-3', $event)"
+             (mouseenter)="setHovered('col-3')"
+             (mouseleave)="clearHovered()">
+          2:1<span class="bet-chip" *ngIf="getBetAmount('col-3') > 0">{{ getBetAmount('col-3') }}</span>
+        </div>
+        <div class="col-bet"
+             style="grid-column: 26; grid-row: 3"
+             [class.has-bet]="getBetAmount('col-2') > 0"
+             [class.winning-zone]="isWinningZone('col-2')"
+             (click)="placeBet('col-2')"
+             (contextmenu)="removeBet('col-2', $event)"
+             (mouseenter)="setHovered('col-2')"
+             (mouseleave)="clearHovered()">
+          2:1<span class="bet-chip" *ngIf="getBetAmount('col-2') > 0">{{ getBetAmount('col-2') }}</span>
+        </div>
+        <div class="col-bet"
+             style="grid-column: 26; grid-row: 5"
+             [class.has-bet]="getBetAmount('col-1') > 0"
+             [class.winning-zone]="isWinningZone('col-1')"
+             (click)="placeBet('col-1')"
+             (contextmenu)="removeBet('col-1', $event)"
+             (mouseenter)="setHovered('col-1')"
+             (mouseleave)="clearHovered()">
+          2:1<span class="bet-chip" *ngIf="getBetAmount('col-1') > 0">{{ getBetAmount('col-1') }}</span>
+        </div>
+
+        <!-- Street zones (row 7) -->
+        <div *ngFor="let z of streetZones"
+             class="bet-zone street"
+             [class.has-bet]="getBetAmount(z.key) > 0"
+             [class.winning-zone]="isWinningZone(z.key)"
+             [style.grid-column]="z.gridCol"
+             [style.grid-row]="z.gridRow"
+             [title]="z.label"
+             (click)="placeBet(z.key)"
+             (contextmenu)="removeBet(z.key, $event)"
+             (mouseenter)="setHovered(z.key)"
+             (mouseleave)="clearHovered()">
+          <span class="zone-chip" *ngIf="getBetAmount(z.key) > 0">{{ getBetAmount(z.key) }}</span>
+        </div>
+
+        <!-- Line zones (row 7, gap cols) -->
+        <div *ngFor="let z of lineZones"
+             class="bet-zone line"
+             [class.has-bet]="getBetAmount(z.key) > 0"
+             [class.winning-zone]="isWinningZone(z.key)"
+             [style.grid-column]="z.gridCol"
+             [style.grid-row]="z.gridRow"
+             [title]="z.label"
+             (click)="placeBet(z.key)"
+             (contextmenu)="removeBet(z.key, $event)"
+             (mouseenter)="setHovered(z.key)"
+             (mouseleave)="clearHovered()">
+          <span class="zone-chip" *ngIf="getBetAmount(z.key) > 0">{{ getBetAmount(z.key) }}</span>
+        </div>
+
+      </div><!-- /table-main -->
+
+      <!-- ── Outside bets ── -->
+
+      <!-- Dozen bets -->
+      <div class="outside-row dozen-row">
+        <div class="outside-cell dozen"
+             [class.has-bet]="getBetAmount('dozen-1') > 0"
+             [class.winning-zone]="isWinningZone('dozen-1')"
+             (click)="placeBet('dozen-1')"
+             (contextmenu)="removeBet('dozen-1', $event)"
+             (mouseenter)="setHovered('dozen-1')"
+             (mouseleave)="clearHovered()">
+          1<sup>er</sup> 12
+          <span class="bet-chip" *ngIf="getBetAmount('dozen-1') > 0">{{ getBetAmount('dozen-1') }}</span>
+        </div>
+        <div class="outside-cell dozen"
+             [class.has-bet]="getBetAmount('dozen-2') > 0"
+             [class.winning-zone]="isWinningZone('dozen-2')"
+             (click)="placeBet('dozen-2')"
+             (contextmenu)="removeBet('dozen-2', $event)"
+             (mouseenter)="setHovered('dozen-2')"
+             (mouseleave)="clearHovered()">
+          2<sup>e</sup> 12
+          <span class="bet-chip" *ngIf="getBetAmount('dozen-2') > 0">{{ getBetAmount('dozen-2') }}</span>
+        </div>
+        <div class="outside-cell dozen"
+             [class.has-bet]="getBetAmount('dozen-3') > 0"
+             [class.winning-zone]="isWinningZone('dozen-3')"
+             (click)="placeBet('dozen-3')"
+             (contextmenu)="removeBet('dozen-3', $event)"
+             (mouseenter)="setHovered('dozen-3')"
+             (mouseleave)="clearHovered()">
+          3<sup>e</sup> 12
+          <span class="bet-chip" *ngIf="getBetAmount('dozen-3') > 0">{{ getBetAmount('dozen-3') }}</span>
+        </div>
+      </div>
+
+      <!-- Even-money bets -->
+      <div class="outside-row simple-row">
+        <div class="outside-cell"
+             [class.has-bet]="getBetAmount('low') > 0"
+             [class.winning-zone]="isWinningZone('low')"
+             (click)="placeBet('low')"
+             (contextmenu)="removeBet('low', $event)"
+             (mouseenter)="setHovered('low')"
+             (mouseleave)="clearHovered()">
+          1–18<span class="bet-chip" *ngIf="getBetAmount('low') > 0">{{ getBetAmount('low') }}</span>
+        </div>
+        <div class="outside-cell"
+             [class.has-bet]="getBetAmount('even') > 0"
+             [class.winning-zone]="isWinningZone('even')"
+             (click)="placeBet('even')"
+             (contextmenu)="removeBet('even', $event)"
+             (mouseenter)="setHovered('even')"
+             (mouseleave)="clearHovered()">
+          Pair<span class="bet-chip" *ngIf="getBetAmount('even') > 0">{{ getBetAmount('even') }}</span>
+        </div>
+        <div class="outside-cell red-cell"
+             [class.has-bet]="getBetAmount('red') > 0"
+             [class.winning-zone]="isWinningZone('red')"
+             (click)="placeBet('red')"
+             (contextmenu)="removeBet('red', $event)"
+             (mouseenter)="setHovered('red')"
+             (mouseleave)="clearHovered()">
+          Rouge<span class="bet-chip" *ngIf="getBetAmount('red') > 0">{{ getBetAmount('red') }}</span>
+        </div>
+        <div class="outside-cell black-cell"
+             [class.has-bet]="getBetAmount('black') > 0"
+             [class.winning-zone]="isWinningZone('black')"
+             (click)="placeBet('black')"
+             (contextmenu)="removeBet('black', $event)"
+             (mouseenter)="setHovered('black')"
+             (mouseleave)="clearHovered()">
+          Noir<span class="bet-chip" *ngIf="getBetAmount('black') > 0">{{ getBetAmount('black') }}</span>
+        </div>
+        <div class="outside-cell"
+             [class.has-bet]="getBetAmount('odd') > 0"
+             [class.winning-zone]="isWinningZone('odd')"
+             (click)="placeBet('odd')"
+             (contextmenu)="removeBet('odd', $event)"
+             (mouseenter)="setHovered('odd')"
+             (mouseleave)="clearHovered()">
+          Impair<span class="bet-chip" *ngIf="getBetAmount('odd') > 0">{{ getBetAmount('odd') }}</span>
+        </div>
+        <div class="outside-cell"
+             [class.has-bet]="getBetAmount('high') > 0"
+             [class.winning-zone]="isWinningZone('high')"
+             (click)="placeBet('high')"
+             (contextmenu)="removeBet('high', $event)"
+             (mouseenter)="setHovered('high')"
+             (mouseleave)="clearHovered()">
+          19–36<span class="bet-chip" *ngIf="getBetAmount('high') > 0">{{ getBetAmount('high') }}</span>
+        </div>
+      </div>
+
+    </div><!-- /roulette-table -->
+  </div><!-- /table-wrapper -->
+
+  <!-- Bet type legend -->
+  <div class="bet-legend" *ngIf="gameState().phase === RoulettePhase.BETTING">
+    <span class="legend-item"><span class="legend-dot l-straight"></span>Plein (35:1)</span>
+    <span class="legend-item"><span class="legend-dot l-split"></span>Cheval (17:1)</span>
+    <span class="legend-item"><span class="legend-dot l-corner"></span>Carré (8:1)</span>
+    <span class="legend-item"><span class="legend-dot l-street"></span>Transversale (11:1)</span>
+    <span class="legend-item"><span class="legend-dot l-line"></span>Sixain (5:1)</span>
+  </div>
+
+  <!-- Result banner -->
+  <div class="result-banner" *ngIf="gameState().phase === RoulettePhase.RESULT && gameState().result !== null">
+    <span class="result-number"
+          [class.red]="getColor(gameState().result!) === 'red'"
+          [class.black]="getColor(gameState().result!) === 'black'"
+          [class.green]="getColor(gameState().result!) === 'green'">
+      {{ gameState().result }}
+    </span>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="action-area">
+    <button class="spin-btn" *ngIf="gameState().phase === RoulettePhase.BETTING"
+            [disabled]="!canSpin()" (click)="spin()">
+      Lancer — ${{ totalBet() }}
+    </button>
+    <button class="spin-btn" *ngIf="gameState().phase === RoulettePhase.SPINNING" disabled>
+      En cours…
+    </button>
+    <ng-container *ngIf="gameState().phase === RoulettePhase.RESULT">
+      <button class="new-round-btn" (click)="newRound()">Nouvelle Partie</button>
+      <button class="replay-btn" [disabled]="!canReplay()" (click)="replayLastHand()">Rejouer la main</button>
+    </ng-container>
+  </div>
+
+  <!-- History -->
+  <div class="history-panel" *ngIf="gameState().history.length > 0">
+    <h2>Historique</h2>
+    <div class="history-list">
+      <div *ngFor="let entry of gameState().history" class="history-entry">
+        <span class="history-time">{{ entry.timestamp | date: 'HH:mm' }}</span>
+        <span class="result-badge" [class.red]="entry.color === 'red'"
+                                   [class.black]="entry.color === 'black'"
+                                   [class.green]="entry.color === 'green'">
+          {{ entry.result }}
+        </span>
+        <span class="history-bet">Mise : ${{ entry.totalBet }}</span>
+        <span class="history-profit" [class.profit]="entry.profit > 0" [class.loss]="entry.profit < 0">
+          {{ entry.profit >= 0 ? '+' : '' }}${{ entry.profit }}
+        </span>
+        <span class="history-balance">Balance : ${{ entry.balance }}</span>
+      </div>
+    </div>
+  </div>
+</div>

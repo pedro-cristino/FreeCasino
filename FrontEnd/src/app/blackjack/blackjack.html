@@ -1,0 +1,208 @@
+<div class="bj-wrapper">
+
+  <!-- Stats Bar -->
+  <div class="bj-stats">
+    <div class="stat-item">
+      <span class="stat-label">Balance</span>
+      <span class="stat-value balance">${{ gameState().playerBalance }}</span>
+    </div>
+    <div class="bj-title">♠ BLACKJACK ♠</div>
+    <div class="stat-row">
+      <div class="stat-item">
+        <span class="stat-label">Parties</span>
+        <span class="stat-value">{{ gamesPlayed() }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Victoires</span>
+        <span class="stat-value wins">{{ gamesWon() }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Défaites</span>
+        <span class="stat-value losses">{{ gamesLost() }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">P/L</span>
+        <span class="stat-value" [class.profit]="profitLoss() > 0" [class.loss]="profitLoss() < 0">
+          {{ profitLoss() >= 0 ? '+' : '' }}${{ profitLoss() }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Banner -->
+  <div class="bj-message">{{ gameState().message }}</div>
+
+  <!-- SEAT SELECTION -->
+  <div class="bj-panel seat-panel" *ngIf="gameState().phase === GamePhase.SEAT_SELECTION">
+    <h2 class="panel-title">Choisissez le nombre de sièges</h2>
+    <div class="seat-buttons">
+      <button *ngFor="let count of [1, 2, 3, 4, 5, 6]" class="seat-btn" (click)="selectSeats(count)">
+        <span class="seat-num">{{ count }}</span>
+        <span class="seat-sublabel">{{ count > 1 ? 'Sièges' : 'Siège' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- BETTING PHASE -->
+  <div class="bj-panel betting-panel" *ngIf="gameState().phase === GamePhase.BETTING">
+    <h2 class="panel-title">Placez vos mises</h2>
+    <div class="betting-grid">
+      <div *ngFor="let seat of gameState().seats" class="betting-seat">
+        <div class="seat-header">Siège {{ seat.index + 1 }}</div>
+        <div class="bet-amount">${{ betInputs[seat.index] || 0 }}</div>
+        <!-- Hidden input keeps ngModel binding intact -->
+        <input type="number" [(ngModel)]="betInputs[seat.index]" min="10" [max]="gameState().playerBalance" class="bet-input-hidden">
+        <div class="chip-row">
+          <button class="chip chip-10" (click)="addChipToBet(seat.index, 10)">$10</button>
+          <button class="chip chip-25" (click)="addChipToBet(seat.index, 25)">$25</button>
+          <button class="chip chip-50" (click)="addChipToBet(seat.index, 50)">$50</button>
+          <button class="chip chip-100" (click)="addChipToBet(seat.index, 100)">$100</button>
+          <button class="chip chip-allin" (click)="allInSeat(seat.index)">MAX</button>
+        </div>
+      </div>
+    </div>
+    <button class="deal-btn" [disabled]="!canPlaceBets()" (click)="placeBets()">
+      Distribuer — ${{ totalBetInput() }}
+    </button>
+  </div>
+
+  <!-- GAME TABLE (felt) -->
+  <div class="felt-table" *ngIf="gameState().phase !== GamePhase.SEAT_SELECTION && gameState().phase !== GamePhase.BETTING">
+
+    <!-- Dealer Zone -->
+    <div class="dealer-zone">
+      <div class="zone-label">— CROUPIER —</div>
+      <div class="cards-row">
+        <div *ngFor="let card of gameState().dealerHand.cards; let i = index"
+             class="card" [class.face-down]="card.faceDown">
+          <div *ngIf="!card.faceDown" class="card-inner" [class.red]="getCardColor(card.suit) === 'red'">
+            <div class="card-corner tl">
+              <span class="c-rank">{{ card.rank }}</span>
+              <span class="c-suit">{{ card.suit }}</span>
+            </div>
+            <div class="c-center">{{ card.suit }}</div>
+            <div class="card-corner br">
+              <span class="c-rank">{{ card.rank }}</span>
+              <span class="c-suit">{{ card.suit }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hand-value-badge" *ngIf="gameState().dealerHand.value !== undefined">
+        {{ gameState().dealerHand.value }}
+        <span class="bust-tag" *ngIf="gameState().dealerHand.status === HandStatus.BUST">BUST</span>
+      </div>
+    </div>
+
+    <!-- Table Divider -->
+    <div class="table-divider"></div>
+
+    <!-- Player Zone -->
+    <div class="player-zone">
+      <div class="seats-row"
+           [class.s1]="gameState().selectedSeatsCount === 1"
+           [class.s2]="gameState().selectedSeatsCount === 2"
+           [class.s3]="gameState().selectedSeatsCount === 3"
+           [class.s4]="gameState().selectedSeatsCount === 4"
+           [class.s5]="gameState().selectedSeatsCount === 5"
+           [class.s6]="gameState().selectedSeatsCount === 6">
+
+        <div *ngFor="let seat of gameState().seats" class="player-seat" [class.active-seat]="isActiveSeat(seat.index)">
+          <div class="seat-badge">Siège {{ seat.index + 1 }}</div>
+
+          <!-- Main Hand -->
+          <div class="hand-block" [class.active-hand]="isActiveHand(seat.index, 0)">
+            <div class="cards-row">
+              <div *ngFor="let card of seat.mainHand.cards; let i = index" class="card">
+                <div class="card-inner" [class.red]="getCardColor(card.suit) === 'red'">
+                  <div class="card-corner tl">
+                    <span class="c-rank">{{ card.rank }}</span>
+                    <span class="c-suit">{{ card.suit }}</span>
+                  </div>
+                  <div class="c-center">{{ card.suit }}</div>
+                  <div class="card-corner br">
+                    <span class="c-rank">{{ card.rank }}</span>
+                    <span class="c-suit">{{ card.suit }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="hand-meta">
+              <span class="hand-val">{{ seat.mainHand.value }}{{ seat.mainHand.isSoft ? 's' : '' }}</span>
+              <span class="hand-bet-tag">${{ seat.mainHand.bet }}</span>
+              <span *ngIf="seat.mainHand.status !== HandStatus.ACTIVE && seat.mainHand.status !== HandStatus.STAND"
+                    class="result-badge"
+                    [class.win]="seat.mainHand.status === HandStatus.WIN || seat.mainHand.status === HandStatus.BLACKJACK"
+                    [class.loss]="seat.mainHand.status === HandStatus.LOSS || seat.mainHand.status === HandStatus.BUST"
+                    [class.push]="seat.mainHand.status === HandStatus.PUSH">
+                {{ getHandStatusLabel(seat.mainHand.status) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Split Hand -->
+          <div *ngIf="seat.splitHand" class="hand-block split-block" [class.active-hand]="isActiveHand(seat.index, 1)">
+            <div class="split-label">SPLIT</div>
+            <div class="cards-row">
+              <div *ngFor="let card of seat.splitHand!.cards; let i = index" class="card">
+                <div class="card-inner" [class.red]="getCardColor(card.suit) === 'red'">
+                  <div class="card-corner tl">
+                    <span class="c-rank">{{ card.rank }}</span>
+                    <span class="c-suit">{{ card.suit }}</span>
+                  </div>
+                  <div class="c-center">{{ card.suit }}</div>
+                  <div class="card-corner br">
+                    <span class="c-rank">{{ card.rank }}</span>
+                    <span class="c-suit">{{ card.suit }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="hand-meta">
+              <span class="hand-val">{{ seat.splitHand!.value }}{{ seat.splitHand!.isSoft ? 's' : '' }}</span>
+              <span class="hand-bet-tag">${{ seat.splitHand!.bet }}</span>
+              <span *ngIf="seat.splitHand!.status !== HandStatus.ACTIVE && seat.splitHand!.status !== HandStatus.STAND"
+                    class="result-badge"
+                    [class.win]="seat.splitHand!.status === HandStatus.WIN || seat.splitHand!.status === HandStatus.BLACKJACK"
+                    [class.loss]="seat.splitHand!.status === HandStatus.LOSS || seat.splitHand!.status === HandStatus.BUST"
+                    [class.push]="seat.splitHand!.status === HandStatus.PUSH">
+                {{ getHandStatusLabel(seat.splitHand!.status) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-bar" *ngIf="gameState().phase === GamePhase.PLAYER_TURN">
+      <button class="act-btn hit" [disabled]="!canHit()" (click)="hit()">Hit</button>
+      <button class="act-btn stand" [disabled]="!canStand()" (click)="stand()">Stand</button>
+      <button class="act-btn double" [disabled]="!canDouble()" (click)="doubleDown()">Double</button>
+      <button class="act-btn split" [disabled]="!canSplit()" (click)="split()">Split</button>
+    </div>
+
+    <!-- Results -->
+    <div class="action-bar" *ngIf="gameState().phase === GamePhase.RESULTS">
+      <button class="act-btn new-round" [disabled]="isResolving" (click)="newRound()">Nouvelle partie</button>
+      <button class="act-btn replay" [disabled]="isResolving || !canReplay()" (click)="replayLastHand()">Rejouer</button>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="bj-history" *ngIf="gameState().history.length > 0">
+    <div class="history-title">Historique</div>
+    <div class="history-list">
+      <div *ngFor="let entry of gameState().history" class="history-entry">
+        <span class="h-time">{{ entry.timestamp | date: 'HH:mm' }}</span>
+        <span class="h-info">{{ entry.seats }} siège{{ entry.seats > 1 ? 's' : '' }}</span>
+        <span class="h-info">Mise ${{ entry.totalBet }}</span>
+        <span [class.h-win]="entry.result > 0" [class.h-loss]="entry.result < 0" [class.h-push]="entry.result === 0">
+          {{ entry.result >= 0 ? '+' : '' }}${{ entry.result }}
+        </span>
+        <span class="h-bal">→ ${{ entry.balance }}</span>
+      </div>
+    </div>
+  </div>
+
+</div>

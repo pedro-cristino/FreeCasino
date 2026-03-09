@@ -1,0 +1,25 @@
+<div class="home-container">
+
+  <!-- Best score -->
+  @if (highScoreService.myBest() > 0) {
+    <div class="score-banner">
+      🏆 Meilleur score sauvegardé : <strong>${{ highScoreService.myBest() }}</strong>
+      @if (highScoreService.myRank() !== null) {
+        <span class="score-rank">({{ highScoreService.myRank() === 1 ? '1er' : highScoreService.myRank() + 'ème' }})</span>
+      }
+    </div>
+  }
+
+  <!-- Game grid -->
+  <div class="games-grid">
+    @for (game of games; track game.path) {
+      <a class="game-card" [routerLink]="game.path" [style.--accent]="game.accent">
+        <div class="card-glow"></div>
+        <span class="game-emoji">{{ game.emoji }}</span>
+        <span class="game-name">{{ game.name }}</span>
+        <span class="game-desc">{{ game.desc }}</span>
+      </a>
+    }
+  </div>
+
+</div>

@@ -1,0 +1,249 @@
+/* ── Wrapper ─────────────────────────────────────────────────────────────── */
+
+.plinko-container {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 20%, #1e5534 0%, #0e2a1a 55%, #060f09 100%);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
+}
+.stats-right {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+.stats-title {
+  text-align: center;
+  font-size: 1.7rem;
+  margin: 0 0 14px;
+  color: #d4af37;
+  font-weight: 900;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  text-shadow: 0 0 24px rgba(212, 175, 55, 0.5);
+}
+
+/* ── Stats ─────────────────────────────────────────────────────────────────── */
+
+.stats-panel {
+  display: flex;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 14px;
+  padding: 12px 24px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.stat-label { font-size: 0.65rem; color: rgba(255, 255, 255, 0.45); text-transform: uppercase; letter-spacing: 1px; }
+.stat-value { font-size: 1.1rem; font-weight: 700; color: #fff; }
+.stat-value.balance { color: #2ecc71; }
+.stat-value.wins    { color: #2ecc71; }
+.stat-value.losses  { color: #e74c3c; }
+.stat-value.profit  { color: #2ecc71; }
+.stat-value.loss    { color: #e74c3c; }
+
+/* ── Layout ─────────────────────────────────────────────────────────────────── */
+
+.game-layout {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+  align-items: flex-start;
+}
+
+/* ── Controls ───────────────────────────────────────────────────────────────── */
+
+.controls-panel {
+  width: 230px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-section {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.section-label {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+/* Chip grid: 3 columns */
+.chip-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  padding: 9px 0;
+  border-radius: 9px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chip:hover { border-color: rgba(212, 175, 55, 0.5); color: #d4af37; }
+
+.chip.selected {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: #d4af37;
+  color: #d4af37;
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.3);
+  transform: scale(1.04);
+}
+
+.balance-hint { font-size: 0.75rem; color: rgba(255, 255, 255, 0.3); text-align: right; }
+
+/* Last result flash */
+.last-result {
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: flashIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.result-win  { background: linear-gradient(135deg, rgba(39, 174, 96, 0.25), rgba(30, 132, 73, 0.25)); border: 1px solid rgba(46, 204, 113, 0.4); }
+.result-lose { background: linear-gradient(135deg, rgba(142, 68, 173, 0.25), rgba(108, 52, 131, 0.25)); border: 1px solid rgba(142, 68, 173, 0.4); }
+
+@keyframes flashIn {
+  0%   { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+.result-mult   { font-size: 1.5rem; font-weight: 900; color: #d4af37; }
+.result-amount { font-size: 0.9rem; color: rgba(255, 255, 255, 0.75); }
+
+/* Legend */
+.legend-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.legend-badge {
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #1a1f2e;
+}
+
+.legend-hint { font-size: 0.72rem; color: rgba(255, 255, 255, 0.3); text-align: center; }
+
+/* ── Canvas panel ───────────────────────────────────────────────────────────── */
+
+.canvas-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.drop-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #d4af37, #b8961f);
+  color: #1a1a1a;
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.45);
+  transition: transform 0.1s, box-shadow 0.1s;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.drop-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 26px rgba(212, 175, 55, 0.65);
+}
+
+.drop-btn:active:not(:disabled) { transform: translateY(0); }
+.drop-btn:disabled { background: #3a3a3a; color: #666; cursor: not-allowed; box-shadow: none; }
+
+.plinko-canvas {
+  border-radius: 14px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  max-width: 100%;
+}
+
+/* ── History ────────────────────────────────────────────────────────────────── */
+
+.history-panel {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 14px;
+  padding: 16px 20px;
+}
+
+.history-panel h2 {
+  text-align: center;
+  margin-bottom: 12px;
+  color: #d4af37;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.history-list { display: flex; flex-direction: column; gap: 5px; }
+
+.history-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border-left: 3px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.history-entry.history-win  { border-left-color: #2ecc71; }
+.history-entry.history-lose { border-left-color: #9b59b6; }
+
+.history-time    { color: rgba(255, 255, 255, 0.35); font-size: 0.75rem; }
+.history-line    { font-size: 1rem; }
+.history-bet     { color: rgba(255, 255, 255, 0.5); }
+.history-detail  { color: rgba(255, 255, 255, 0.4); font-size: 0.8rem; }
+.history-balance { color: rgba(255, 255, 255, 0.5); margin-left: auto; }
+.history-profit.profit { color: #2ecc71; font-weight: 700; }
+.history-profit.loss   { color: #e74c3c; font-weight: 700; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+
+@media (max-width: 800px) {
+  .game-layout { flex-direction: column; }
+  .controls-panel { width: 100%; }
+  .plinko-canvas { width: 100%; height: auto; }
+}

@@ -1,0 +1,154 @@
+<div class="slots-container">
+  <!-- Stats -->
+  <div class="stats-panel">
+    <div class="stat">
+      <span class="stat-label">Balance</span>
+      <span class="stat-value balance">${{ balance() }}</span>
+    </div>
+    <div class="stats-title">🎰 SLOTS</div>
+    <div class="stats-right">
+      <div class="stat">
+        <span class="stat-label">Parties</span>
+        <span class="stat-value">{{ gamesPlayed() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Victoires</span>
+        <span class="stat-value wins">{{ gamesWon() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Défaites</span>
+        <span class="stat-value losses">{{ gamesLost() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Profit</span>
+        <span
+          class="stat-value"
+          [class.profit]="profitLoss() > 0"
+          [class.loss]="profitLoss() < 0"
+        >{{ profitLoss() >= 0 ? '+' : '' }}${{ profitLoss() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message -->
+  <div
+    class="message-display"
+    [class.win-message]="phase() === SlotsPhase.RESULT && history().length > 0 && history()[0].profit > 0"
+    [class.lose-message]="phase() === SlotsPhase.RESULT && history().length > 0 && history()[0].profit <= 0"
+  >
+    {{ message() }}
+  </div>
+
+  <!-- Slot Machine Body -->
+  <div class="machine-wrapper">
+    <div class="machine-top">FREECASINO SLOTS</div>
+    <div class="machine-body">
+      <div class="reels-frame">
+        <div class="win-line-bar"></div>
+        <div class="reels-container">
+          @for (reel of displayReels(); track $index; let i = $index) {
+            <div class="reel" [class.spinning]="spinningReels()[i]" [class.stopped]="!spinningReels()[i] && phase() === SlotsPhase.SPINNING">
+              @for (sym of reel; track $index; let row = $index) {
+                <div
+                  class="symbol-cell"
+                  [class.win-row]="row === 1"
+                  [class.win-highlight]="row === 1 && phase() === SlotsPhase.RESULT && history().length > 0 && history()[0].profit > 0"
+                >
+                  {{ sym }}
+                </div>
+              }
+            </div>
+            @if (i < 2) {
+              <div class="reel-separator"></div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Lever / Spin button area -->
+    <div class="machine-bottom">
+      @if (phase() === SlotsPhase.SPINNING) {
+        <div class="spinning-indicator">
+          <div class="slot-spinner"></div>
+        </div>
+      } @else if (phase() === SlotsPhase.BETTING) {
+        <button class="spin-btn" [disabled]="!canSpin()" (click)="spin()">
+          TOURNER
+        </button>
+      } @else {
+        <button class="new-round-btn" (click)="newRound()">
+          Nouvelle Partie
+        </button>
+        <button class="replay-btn" [disabled]="!canReplay()" (click)="replayLastHand()">
+          Rejouer la main
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Bet Controls -->
+  @if (phase() !== SlotsPhase.SPINNING) {
+    <div class="bet-section">
+      <div class="bet-display">
+        <span class="bet-label">Mise actuelle :</span>
+        <span class="bet-amount">${{ bet() }}</span>
+        <button class="clear-btn" (click)="clearBet()" [disabled]="phase() !== SlotsPhase.BETTING">Effacer</button>
+      </div>
+      <div class="chip-selector">
+        <span class="chip-label">Ajouter :</span>
+        @for (chip of CHIP_VALUES; track chip) {
+          <button
+            class="chip"
+            (click)="addBet(chip)"
+            [disabled]="phase() !== SlotsPhase.BETTING"
+          >${{ chip }}</button>
+        }
+        <button
+          class="chip chip-allin"
+          (click)="allIn()"
+          [disabled]="phase() !== SlotsPhase.BETTING"
+        >All in</button>
+      </div>
+    </div>
+  }
+
+  <!-- Payout Table -->
+  <div class="payout-table">
+    <h3>Table des gains (mise x multiplicateur)</h3>
+    <div class="payout-grid">
+      @for (sym of SYMBOLS; track sym) {
+        <div class="payout-row">
+          <span class="payout-combo">{{ sym }}{{ sym }}{{ sym }}</span>
+          <span class="payout-mult">x{{ PAYOUTS[sym] }}</span>
+        </div>
+      }
+      <div class="payout-row payout-partial">
+        <span class="payout-combo">2 identiques</span>
+        <span class="payout-mult">x~⅓</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  @if (history().length > 0) {
+    <div class="history-panel">
+      <h2>Historique</h2>
+      <div class="history-list">
+        @for (entry of history(); track entry.timestamp) {
+          <div class="history-entry" [class.history-win]="entry.profit > 0" [class.history-lose]="entry.profit <= 0">
+            <span class="history-time">{{ entry.timestamp | date: 'HH:mm:ss' }}</span>
+            <span class="history-line">{{ entry.line.join(' ') }}</span>
+            <span class="history-bet">Mise: ${{ entry.bet }}</span>
+            <span
+              class="history-profit"
+              [class.profit]="entry.profit > 0"
+              [class.loss]="entry.profit < 0"
+            >{{ entry.profit >= 0 ? '+' : '' }}${{ entry.profit }}</span>
+            <span class="history-balance">Balance: ${{ entry.balance }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

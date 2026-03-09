@@ -1,0 +1,87 @@
+<nav class="navbar" *ngIf="authService.isAuthenticated()">
+  <div class="nav-container">
+    <a class="nav-brand" routerLink="/home">FreeCasino</a>
+    <ul class="nav-menu">
+      <li class="nav-item nav-dropdown" (mouseenter)="gamesOpen = true" (mouseleave)="gamesOpen = false">
+        <button class="nav-link nav-dropdown-toggle" [class.dropdown-open]="gamesOpen">
+          🎮 Jeux <span class="dropdown-arrow">▾</span>
+        </button>
+        <ul class="dropdown-menu" [class.open]="gamesOpen">
+          <li>
+            <a class="dropdown-item" routerLink="/blackjack" routerLinkActive="active" (click)="gamesOpen = false">
+              🃏 Blackjack
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" routerLink="/baccarat" routerLinkActive="active" (click)="gamesOpen = false">
+              🎴 Baccarat
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" routerLink="/roulette" routerLinkActive="active" (click)="gamesOpen = false">
+              🎡 Roulette
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" routerLink="/slots" routerLinkActive="active" (click)="gamesOpen = false">
+              🎰 Slots
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" routerLink="/mines" routerLinkActive="active" (click)="gamesOpen = false">
+              💣 Mines
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" routerLink="/plinko" routerLinkActive="active" (click)="gamesOpen = false">
+              🔵 Plinko
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" routerLink="/crash" routerLinkActive="active" (click)="gamesOpen = false">
+              🚀 Crash
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/leaderboard" routerLinkActive="active">🏆 Leaderboard</a>
+      </li>
+    </ul>
+    <div class="nav-actions">
+      <span class="nav-balance">${{ balanceService.balance() }}</span>
+      <button class="save-btn"
+              *ngIf="balanceService.balance() > 1000"
+              (click)="showSaveConfirm = true">
+        Sauvegarder
+      </button>
+      <button class="restart-btn" (click)="showRestartConfirm = true">Restart run</button>
+      <button class="logout-btn" (click)="authService.logout()">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Save score confirmation -->
+<div class="modal-overlay" *ngIf="showSaveConfirm" (click)="showSaveConfirm = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3>Sauvegarder le score</h3>
+    <p>Enregistrer <strong>${{ balanceService.balance() }}</strong> dans le leaderboard ?</p>
+    <p class="modal-warning">Votre balance sera remise à <strong>$1 000</strong>.</p>
+    <div class="modal-actions">
+      <button class="modal-confirm" (click)="saveScore()">Confirmer</button>
+      <button class="modal-cancel" (click)="showSaveConfirm = false">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- Restart confirmation -->
+<div class="modal-overlay" *ngIf="showRestartConfirm" (click)="showRestartConfirm = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3>Restart run</h3>
+    <p>Remettre la balance à <strong>$1 000</strong> ?</p>
+    <div class="modal-actions">
+      <button class="modal-confirm" (click)="restartRun()">Confirmer</button>
+      <button class="modal-cancel" (click)="showRestartConfirm = false">Annuler</button>
+    </div>
+  </div>
+</div>

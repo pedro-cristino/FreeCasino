@@ -1,0 +1,158 @@
+<div class="crash-container">
+  <!-- Stats -->
+  <div class="stats-panel">
+    <div class="stat">
+      <span class="stat-label">Balance</span>
+      <span class="stat-value balance">${{ balance() }}</span>
+    </div>
+    <div class="stats-title">🚀 CRASH</div>
+    <div class="stats-right">
+      <div class="stat">
+        <span class="stat-label">Parties</span>
+        <span class="stat-value">{{ gamesPlayed() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Encaissés</span>
+        <span class="stat-value wins">{{ gamesWon() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Crashs</span>
+        <span class="stat-value losses">{{ gamesLost() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Profit</span>
+        <span class="stat-value" [class.profit]="profitLoss() >= 0" [class.loss]="profitLoss() < 0">
+          {{ profitLoss() >= 0 ? '+' : '' }}${{ profitLoss() }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-layout">
+    <!-- Left panel -->
+    <div class="controls-panel">
+
+      <!-- Recent crashes -->
+      @if (recentCrashes().length > 0) {
+        <div class="recent-crashes">
+          @for (m of recentCrashes(); track $index) {
+            <span class="crash-badge"
+              [style.background]="crashColor(m)"
+              [style.color]="crashTextColor(m)">
+              {{ m.toFixed(2) }}×
+            </span>
+          }
+        </div>
+      }
+
+      <!-- BETTING: chip accumulation + fly button -->
+      @if (phase() === CrashPhase.BETTING) {
+        <div class="control-section">
+          <div class="bet-header">
+            <span class="section-label">Mise</span>
+            <span class="bet-amount">${{ bet() }}</span>
+            <button class="clear-btn" (click)="clearBet()" [disabled]="bet() === 0">Effacer</button>
+          </div>
+          <div class="chip-grid">
+            @for (chip of CHIP_VALUES; track chip) {
+              <button class="chip" (click)="addBet(chip)">+${{ chip }}</button>
+            }
+            <button class="chip chip-allin" (click)="allIn()">All in</button>
+          </div>
+          <div class="balance-hint">Balance : ${{ balance() }}</div>
+        </div>
+
+        <button class="fly-btn" (click)="fly()" [disabled]="!canFly()">
+          🚀 Décoller — ${{ bet() }}
+        </button>
+
+        @if (canReplay()) {
+          <button class="replay-btn" (click)="replayLast()">
+            ↩ Rejouer ${{ lastBet }}
+          </button>
+        }
+      }
+
+      <!-- FLYING: live info + cashout -->
+      @if (phase() === CrashPhase.FLYING) {
+        <div class="live-panel">
+          <div class="live-mult" [class.cashed]="cashedOut()">
+            {{ currentMult().toFixed(2) }}×
+          </div>
+          <div class="live-bet">Mise : ${{ activeBet() }}</div>
+
+          @if (!cashedOut()) {
+            <button class="cashout-btn" (click)="cashOut()">
+              💰 Encaisser
+              <span class="cashout-amount">${{ livePayout() }}</span>
+            </button>
+          } @else {
+            <div class="cashed-badge">
+              ✓ Encaissé à {{ cashOutMult()?.toFixed(2) }}×
+            </div>
+          }
+        </div>
+      }
+
+      <!-- CRASHED: result -->
+      @if (phase() === CrashPhase.CRASHED) {
+        @if (cashedOut()) {
+          <div class="result-banner win-banner">
+            <div class="result-title">✈️ Encaissé !</div>
+            <div class="result-detail">
+              {{ cashOutMult()?.toFixed(2) }}× — ${{ cashoutWinAmount() }}
+            </div>
+          </div>
+        } @else {
+          <div class="result-banner lose-banner">
+            <div class="result-title">💥 Crash !</div>
+            <div class="result-detail">Perdu ${{ activeBet() }}</div>
+          </div>
+        }
+
+        <div class="action-row">
+          <button class="play-again-btn" (click)="playAgain()">Nouvelle partie</button>
+          @if (canReplay()) {
+            <button class="replay-btn-sm" (click)="replayLast()">↩ Rejouer</button>
+          }
+        </div>
+      }
+
+    </div>
+
+    <!-- Right panel: canvas -->
+    <div class="canvas-panel">
+      <canvas #canvas width="600" height="400" class="crash-canvas"></canvas>
+    </div>
+  </div>
+
+  <!-- History -->
+  @if (history().length > 0) {
+    <div class="history-panel">
+      <h2>Historique</h2>
+      <div class="history-list">
+        @for (entry of history(); track entry.timestamp) {
+          <div class="history-entry"
+            [class.history-win]="entry.cashedOut"
+            [class.history-lose]="!entry.cashedOut">
+            <span class="history-time">{{ entry.timestamp | date: 'HH:mm:ss' }}</span>
+            <span class="history-icon">{{ entry.cashedOut ? '✈️' : '💥' }}</span>
+            <span class="history-bet">Mise ${{ entry.bet }}</span>
+            <span class="history-detail">
+              Crash {{ entry.crashMult.toFixed(2) }}×
+              @if (entry.cashedOut) {
+                — Encaissé {{ entry.cashOutMult?.toFixed(2) }}×
+              }
+            </span>
+            <span class="history-profit"
+              [class.profit]="entry.profit >= 0"
+              [class.loss]="entry.profit < 0">
+              {{ entry.profit >= 0 ? '+' : '' }}${{ entry.profit }}
+            </span>
+            <span class="history-balance">Balance : ${{ entry.balance }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

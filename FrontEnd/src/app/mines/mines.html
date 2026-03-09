@@ -1,0 +1,202 @@
+<div class="mines-container">
+  <!-- Stats -->
+  <div class="stats-panel">
+    <div class="stat">
+      <span class="stat-label">Balance</span>
+      <span class="stat-value balance">${{ balance() }}</span>
+    </div>
+    <div class="stats-title">💣 MINES</div>
+    <div class="stats-right">
+      <div class="stat">
+        <span class="stat-label">Parties</span>
+        <span class="stat-value">{{ gamesPlayed() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Victoires</span>
+        <span class="stat-value wins">{{ gamesWon() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Défaites</span>
+        <span class="stat-value losses">{{ gamesLost() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Profit</span>
+        <span class="stat-value" [class.profit]="profitLoss() >= 0" [class.loss]="profitLoss() < 0">
+          {{ profitLoss() >= 0 ? '+' : '' }}${{ profitLoss() }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-layout">
+    <!-- Left panel: controls -->
+    <div class="controls-panel">
+
+      <!-- Bet -->
+      <div class="control-section">
+        <div class="section-header">
+          <span class="section-label">Mise</span>
+          <span class="bet-amount">${{ bet() }}</span>
+          <button class="clear-btn" (click)="clearBet()" [disabled]="phase() !== MinesPhase.SETUP">Effacer</button>
+        </div>
+        <div class="chip-row">
+          <span class="chip-label">Chips :</span>
+          @for (chip of CHIP_VALUES; track chip) {
+            <button class="chip" (click)="addBet(chip)" [disabled]="phase() !== MinesPhase.SETUP">${{ chip }}</button>
+          }
+          <button class="chip chip-allin" (click)="allIn()" [disabled]="phase() !== MinesPhase.SETUP">All in</button>
+        </div>
+      </div>
+
+      <!-- Mine count -->
+      <div class="control-section">
+        <div class="section-label">Nombre de bombes</div>
+        <div class="mine-selector">
+          @for (m of MINE_OPTIONS; track m) {
+            <button
+              class="mine-btn"
+              [class.active]="mineCount() === m"
+              (click)="setMineCount(m)"
+              [disabled]="phase() !== MinesPhase.SETUP">
+              {{ m }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Live stats during play -->
+      @if (phase() === MinesPhase.PLAYING) {
+        <div class="live-stats">
+          <div class="live-row">
+            <span class="live-label">Multiplicateur actuel</span>
+            <span class="live-val mult">{{ multiplier() }}×</span>
+          </div>
+          <div class="live-row">
+            <span class="live-label">Gain actuel</span>
+            <span class="live-val win">${{ currentWin() }}</span>
+          </div>
+          <div class="live-row">
+            <span class="live-label">Prochain multiplicateur</span>
+            <span class="live-val">{{ nextMultiplier() }}×</span>
+          </div>
+          <div class="live-row">
+            <span class="live-label">Prochain gain</span>
+            <span class="live-val">${{ nextWin() }}</span>
+          </div>
+          <div class="live-row">
+            <span class="live-label">Probabilité bombe</span>
+            <span class="live-val danger">{{ mineProbability() }}%</span>
+          </div>
+        </div>
+      }
+
+      <!-- Cashout result -->
+      @if (phase() === MinesPhase.CASHOUT) {
+        <div class="result-banner win-banner">
+          <div class="result-title">Encaissé !</div>
+          <div class="result-detail">{{ multiplier() }}× — Gain : ${{ currentWin() }}</div>
+        </div>
+      }
+      @if (phase() === MinesPhase.EXPLODED) {
+        <div class="result-banner lose-banner">
+          <div class="result-title">Boom ! 💥</div>
+          <div class="result-detail">Vous avez perdu ${{ activeBet() }}</div>
+        </div>
+      }
+
+      <!-- Action buttons -->
+      <div class="action-row">
+        @if (phase() === MinesPhase.SETUP) {
+          <button class="start-btn" (click)="start()" [disabled]="!canStart()">Lancer</button>
+        }
+        @if (phase() === MinesPhase.PLAYING) {
+          <button class="cashout-btn" (click)="cashOut()" [disabled]="revealedCount() === 0">
+            Encaisser ${{ currentWin() }}
+          </button>
+        }
+        @if (phase() === MinesPhase.CASHOUT || phase() === MinesPhase.EXPLODED) {
+          <button class="new-game-btn" (click)="newGame()">Nouvelle partie</button>
+          <button class="replay-btn" (click)="replayLastHand()" [disabled]="!canReplay()">Rejouer</button>
+        }
+      </div>
+
+      <!-- Preview table (setup only) -->
+      @if (phase() === MinesPhase.SETUP) {
+        <div class="preview-table">
+          <div class="preview-title">Multiplicateurs ({{ mineCount() }} bombes)</div>
+          <div class="preview-grid">
+            <div class="preview-header">Découvertes</div>
+            <div class="preview-header">Multiplicateur</div>
+            @for (row of previewTable(); track row.reveals) {
+              <div class="preview-cell">{{ row.reveals }}</div>
+              <div class="preview-cell mult-cell">{{ row.mult }}×</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Right panel: grid -->
+    <div class="grid-panel">
+      @if (phase() === MinesPhase.SETUP) {
+        <div class="grid-placeholder">
+          <div class="placeholder-text">
+            <span class="placeholder-icon">💣</span>
+            <span>Choisissez votre mise et lancez la partie</span>
+          </div>
+          <div class="demo-grid">
+            @for (i of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]; track i) {
+              <div class="demo-tile">❓</div>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="mines-grid">
+          @for (tile of tiles(); track trackTile($index, tile)) {
+            <button
+              class="tile"
+              [class.revealed-gem]="tile.revealed && !tile.isMine"
+              [class.revealed-mine]="tile.revealed && tile.isMine && !tile.isHit"
+              [class.hit-mine]="tile.isHit"
+              [class.unrevealed]="!tile.revealed"
+              (click)="reveal(tile)"
+              [disabled]="tile.revealed || phase() !== MinesPhase.PLAYING">
+              @if (tile.revealed) {
+                @if (tile.isHit) {
+                  <span class="tile-icon">💥</span>
+                } @else if (tile.isMine) {
+                  <span class="tile-icon">💣</span>
+                } @else {
+                  <span class="tile-icon">💎</span>
+                }
+              } @else {
+                <span class="tile-icon tile-hidden">❓</span>
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- History -->
+  @if (history().length > 0) {
+    <div class="history-panel">
+      <h2>Historique</h2>
+      <div class="history-list">
+        @for (entry of history(); track entry.timestamp) {
+          <div class="history-entry" [class.history-win]="entry.won" [class.history-lose]="!entry.won">
+            <span class="history-time">{{ entry.timestamp | date:'HH:mm:ss' }}</span>
+            <span class="history-line">{{ entry.won ? '💎' : '💥' }}</span>
+            <span class="history-bet">Mise ${{ entry.bet }}</span>
+            <span class="history-detail">{{ entry.mines }} bombes — {{ entry.revealed }} découv. — {{ entry.multiplier }}×</span>
+            <span class="history-profit" [class.profit]="entry.profit >= 0" [class.loss]="entry.profit < 0">
+              {{ entry.profit >= 0 ? '+' : '' }}${{ entry.profit }}
+            </span>
+            <span class="history-balance">Balance : ${{ entry.balance }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

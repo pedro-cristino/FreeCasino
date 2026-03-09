@@ -1,0 +1,103 @@
+<div class="plinko-container">
+  <!-- Stats -->
+  <div class="stats-panel">
+    <div class="stat">
+      <span class="stat-label">Balance</span>
+      <span class="stat-value balance">${{ balance() }}</span>
+    </div>
+    <div class="stats-title">🔵 PLINKO</div>
+    <div class="stats-right">
+      <div class="stat">
+        <span class="stat-label">Parties</span>
+        <span class="stat-value">{{ gamesPlayed() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Victoires</span>
+        <span class="stat-value wins">{{ gamesWon() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Défaites</span>
+        <span class="stat-value losses">{{ gamesLost() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Profit</span>
+        <span class="stat-value" [class.profit]="profitLoss() >= 0" [class.loss]="profitLoss() < 0">
+          {{ profitLoss() >= 0 ? '+' : '' }}${{ profitLoss() }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-layout">
+    <!-- Left panel: bet selection -->
+    <div class="controls-panel">
+
+      <div class="control-section">
+        <div class="section-label">Mise par balle</div>
+        <div class="chip-grid">
+          @for (chip of CHIP_VALUES; track chip) {
+            <button
+              class="chip"
+              [class.selected]="bet() === chip"
+              (click)="setBet(chip)">
+              ${{ chip }}
+            </button>
+          }
+        </div>
+        <div class="balance-hint">Balance : ${{ balance() }}</div>
+      </div>
+
+      <!-- Last result flash -->
+      @if (lastResult()) {
+        <div class="last-result" [class.result-win]="lastResult()!.won" [class.result-lose]="!lastResult()!.won">
+          <span class="result-mult">{{ lastResult()!.multiplier }}×</span>
+          <span class="result-amount">${{ lastResult()!.winAmount }}</span>
+        </div>
+      }
+
+      <!-- Multiplier legend -->
+      <div class="control-section legend-section">
+        <div class="section-label" style="margin-bottom: 8px">Multiplicateurs</div>
+        <div class="legend-grid">
+          @for (mult of [100, 25, 10, 5, 3, 2, 1, 0.5, 0.1]; track mult) {
+            <div class="legend-badge" [style.background]="multColor(mult)">{{ mult }}×</div>
+          }
+        </div>
+        <div class="legend-hint">Bords = 100× · Centre = 0.1×</div>
+      </div>
+
+    </div>
+
+    <!-- Right panel: drop button + canvas -->
+    <div class="canvas-panel">
+      <button class="drop-btn" (click)="drop()" [disabled]="!canDrop()">
+        🔵 Lâcher — ${{ bet() }}
+      </button>
+      <canvas #canvas width="560" height="510" class="plinko-canvas"></canvas>
+    </div>
+  </div>
+
+  <!-- History -->
+  @if (history().length > 0) {
+    <div class="history-panel">
+      <h2>Historique</h2>
+      <div class="history-list">
+        @for (entry of history(); track entry.timestamp) {
+          <div class="history-entry" [class.history-win]="entry.won" [class.history-lose]="!entry.won">
+            <span class="history-time">{{ entry.timestamp | date: 'HH:mm:ss' }}</span>
+            <span class="history-line">{{ entry.won ? '🎉' : '😬' }}</span>
+            <span class="history-bet">Mise ${{ entry.bet }}</span>
+            <span class="history-detail">Slot {{ entry.slot }} — {{ entry.multiplier }}×</span>
+            <span
+              class="history-profit"
+              [class.profit]="entry.profit >= 0"
+              [class.loss]="entry.profit < 0">
+              {{ entry.profit >= 0 ? '+' : '' }}${{ entry.profit }}
+            </span>
+            <span class="history-balance">Balance : ${{ entry.balance }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
