@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { StatsService } from '../services/stats.service';
 import { GameHeader } from '../game-header/game-header';
 
 const ROWS = 16;
@@ -77,7 +78,7 @@ export class Plinko implements AfterViewInit, OnDestroy {
     () => Math.round(this.history().reduce((s, h) => s + h.profit, 0) * 100) / 100
   );
 
-  constructor(private balanceService: BalanceService) {
+  constructor(private balanceService: BalanceService, private statsService: StatsService) {
     toObservable(balanceService.balance)
       .pipe(filter(b => b > 0), takeUntilDestroyed())
       .subscribe(b => this.balance.set(b));
@@ -166,6 +167,15 @@ export class Plinko implements AfterViewInit, OnDestroy {
 
     this.balance.set(newBalance);
     this.balanceService.save(newBalance);
+    this.statsService.report({
+      game: 'plinko',
+      won: mult >= 1,
+      amountWon: profit > 0 ? profit : 0,
+      amountLost: profit < 0 ? Math.abs(profit) : 0,
+      amountBet: ball.bet,
+      wasAllIn: false,
+      currentBalance: newBalance,
+    });
 
     // Flash last result for 2s
     this.lastResult.set({ multiplier: mult, winAmount, won: mult >= 1 });

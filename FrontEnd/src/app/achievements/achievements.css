@@ -1,0 +1,71 @@
+.achievements-page {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 20%, #1e5534 0%, #0e2a1a 55%, #060f09 100%);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.page-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 6px;
+  color: #d4af37;
+  text-shadow: 0 0 28px rgba(212, 175, 55, 0.5);
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+
+.page-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ── Grid ────────────────────────────────────────────────────────────────── */
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 10px;
+}
+
+/* ── Slot ────────────────────────────────────────────────────────────────── */
+
+.achievement-slot {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  transition: transform 0.15s;
+}
+
+.achievement-slot.locked {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.achievement-icon {
+  font-size: 1.4rem;
+  color: rgba(255, 255, 255, 0.12);
+  font-weight: 900;
+  user-select: none;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .achievements-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+}

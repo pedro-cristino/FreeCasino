@@ -1,0 +1,179 @@
+<div class="stats-page">
+  <div class="page-header">
+    <h1 class="page-title">📊 Stats</h1>
+    <p class="page-subtitle">Statistiques globales de votre compte</p>
+  </div>
+
+  @if (stats(); as s) {
+
+    <!-- ── Global ───────────────────────────────────────────────────── -->
+    <section class="section">
+      <h2 class="section-title">Vue d'ensemble</h2>
+      <div class="global-grid">
+
+        <div class="stat-card accent-blue">
+          <div class="stat-value">{{ s.totalGamesPlayed }}</div>
+          <div class="stat-label">Parties jouées</div>
+        </div>
+
+        <div class="stat-card accent-green">
+          <div class="stat-value">{{ s.totalWins }}</div>
+          <div class="stat-label">Victoires</div>
+        </div>
+
+        <div class="stat-card accent-red">
+          <div class="stat-value">{{ s.totalLosses }}</div>
+          <div class="stat-label">Défaites</div>
+        </div>
+
+        <div class="stat-card accent-gold">
+          <div class="stat-value">{{ winRate(s.totalGamesPlayed, s.totalWins) }}%</div>
+          <div class="stat-label">Taux de victoire</div>
+        </div>
+
+        <div class="stat-card" [class.accent-green]="net(s) >= 0" [class.accent-red]="net(s) < 0">
+          <div class="stat-value">{{ net(s) >= 0 ? '+' : '' }}${{ net(s) }}</div>
+          <div class="stat-label">Bilan net</div>
+        </div>
+
+        <div class="stat-card accent-green">
+          <div class="stat-value">+${{ s.totalAmountWon }}</div>
+          <div class="stat-label">Total gagné</div>
+        </div>
+
+        <div class="stat-card accent-red">
+          <div class="stat-value">-${{ s.totalAmountLost }}</div>
+          <div class="stat-label">Total perdu</div>
+        </div>
+
+        <div class="stat-card accent-gold">
+          <div class="stat-value">${{ s.highestBalance }}</div>
+          <div class="stat-label">Balance max</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Records ───────────────────────────────────────────────────── -->
+    <section class="section">
+      <h2 class="section-title">Records</h2>
+      <div class="records-grid">
+
+        <div class="record-card">
+          <div class="record-icon">🏆</div>
+          <div class="record-info">
+            <div class="record-value accent-green">+${{ s.maxWinAmount }}</div>
+            <div class="record-label">Gain max (montant)</div>
+          </div>
+        </div>
+
+        <div class="record-card">
+          <div class="record-icon">📈</div>
+          <div class="record-info">
+            <div class="record-value accent-green">+{{ s.maxWinPercent }}%</div>
+            <div class="record-label">Gain max (% de mise)</div>
+          </div>
+        </div>
+
+        <div class="record-card">
+          <div class="record-icon">💸</div>
+          <div class="record-info">
+            <div class="record-value accent-red">-${{ s.maxLossAmount }}</div>
+            <div class="record-label">Perte max</div>
+          </div>
+        </div>
+
+        <div class="record-card">
+          <div class="record-icon">🔥</div>
+          <div class="record-info">
+            <div class="record-value accent-green">{{ s.maxWinStreak }}</div>
+            <div class="record-label">Meilleure série de wins</div>
+          </div>
+        </div>
+
+        <div class="record-card">
+          <div class="record-icon">❄️</div>
+          <div class="record-info">
+            <div class="record-value accent-red">{{ s.maxLossStreak }}</div>
+            <div class="record-label">Pire série de pertes</div>
+          </div>
+        </div>
+
+        <div class="record-card">
+          <div class="record-icon">🚀</div>
+          <div class="record-info">
+            <div class="record-value accent-gold">×{{ s.crashMaxMultiplier }}</div>
+            <div class="record-label">Meilleur cashout Crash</div>
+          </div>
+        </div>
+
+        <div class="record-card">
+          <div class="record-icon">🎲</div>
+          <div class="record-info">
+            <div class="record-value accent-gold">{{ s.hiloMaxStreak }}</div>
+            <div class="record-label">Meilleur streak Hi-Lo</div>
+          </div>
+        </div>
+
+        <div class="record-card">
+          <div class="record-icon">🃏</div>
+          <div class="record-info">
+            <div class="record-value accent-gold">{{ s.blackjackBlackjacks }}</div>
+            <div class="record-label">Blackjacks naturels</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Par jeu ───────────────────────────────────────────────────── -->
+    <section class="section">
+      <h2 class="section-title">Par jeu</h2>
+      <div class="games-grid">
+        @for (g of games; track g.key) {
+          <div class="game-card">
+            <div class="game-header">
+              <span class="game-emoji">{{ g.emoji }}</span>
+              <span class="game-name">{{ g.label }}</span>
+            </div>
+            <div class="game-stats">
+              <div class="game-stat">
+                <span class="game-stat-value">{{ g.played(s) }}</span>
+                <span class="game-stat-label">Parties</span>
+              </div>
+              <div class="game-stat">
+                <span class="game-stat-value accent-green">{{ g.wins(s) }}</span>
+                <span class="game-stat-label">Victoires</span>
+              </div>
+              <div class="game-stat">
+                <span class="game-stat-value accent-red">{{ g.played(s) - g.wins(s) }}</span>
+                <span class="game-stat-label">Défaites</span>
+              </div>
+              <div class="game-stat">
+                <div class="winrate-bar-wrap">
+                  <div
+                    class="winrate-bar"
+                    [style.width.%]="winRate(g.played(s), g.wins(s))"
+                  ></div>
+                </div>
+                <span class="game-stat-label">{{ winRate(g.played(s), g.wins(s)) }}% victoires</span>
+              </div>
+              @if (g.extras(s).length > 0) {
+                <div class="extras-divider"></div>
+                @for (e of g.extras(s); track e.label) {
+                  <div class="game-stat">
+                    <span class="game-stat-value accent-gold">{{ e.value }}</span>
+                    <span class="game-stat-label">{{ e.label }}</span>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+  } @else {
+    <div class="loading">Chargement des stats…</div>
+  }
+</div>

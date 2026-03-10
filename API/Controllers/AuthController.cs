@@ -1,5 +1,6 @@
 using API.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
@@ -7,26 +8,41 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class AuthController(CasinoDbContext db) : ControllerBase
 {
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+            return BadRequest(new { Success = false, Message = "Username and password are required" });
+
+        if (request.Password.Length < 6)
+            return BadRequest(new { Success = false, Message = "Password must be at least 6 characters" });
+
+        var existing = await db.Users.FindAsync(request.Username);
+        if (existing is not null)
+            return Conflict(new { Success = false, Message = "Username already taken" });
+
+        var user = new User
+        {
+            Username = request.Username,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+        };
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+
+        return Ok(new { Success = true });
+    }
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        if (request.Username == "user" && request.Password == "password")
-        {
-            // Upsert user in DB (creates with balance 1000 if first login)
-            var user = await db.Users.FindAsync(request.Username);
-            if (user is null)
-            {
-                db.Users.Add(new User { Username = request.Username });
-                await db.SaveChangesAsync();
-            }
+        var user = await db.Users.FindAsync(request.Username);
+        if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            return Unauthorized(new LoginResponse { Success = false, Message = "Invalid username or password" });
 
-            var token = Guid.NewGuid().ToString();
-            UserStore.RegisterToken(token, request.Username);
+        var token = Guid.NewGuid().ToString();
+        UserStore.RegisterToken(token, request.Username);
 
-            return Ok(new LoginResponse { Success = true, Token = token, Username = request.Username });
-        }
-
-        return Unauthorized(new LoginResponse { Success = false, Message = "Invalid username or password" });
+        return Ok(new LoginResponse { Success = true, Token = token, Username = request.Username });
     }
 
     [HttpPost("logout")]
@@ -50,6 +66,12 @@ public class AuthController(CasinoDbContext db) : ControllerBase
 
         return Unauthorized(new { Success = false, Valid = false });
     }
+}
+
+public class RegisterRequest
+{
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
 }
 
 public class LoginRequest

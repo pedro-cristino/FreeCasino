@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { StatsService } from '../services/stats.service';
 import { GameHeader } from '../game-header/game-header';
 
 const GRID = 5;
@@ -95,7 +96,7 @@ export class Mines {
   gamesLost = computed(() => this.history().filter(h => !h.won).length);
   profitLoss = computed(() => Math.round(this.history().reduce((s, h) => s + h.profit, 0) * 100) / 100);
 
-  constructor(private balanceService: BalanceService) {
+  constructor(private balanceService: BalanceService, private statsService: StatsService) {
     toObservable(balanceService.balance)
       .pipe(filter(b => b > 0), takeUntilDestroyed())
       .subscribe(b => this.balance.set(b));
@@ -169,6 +170,15 @@ export class Mines {
       );
       this.phase.set(MinesPhase.EXPLODED);
       this.balanceService.save(this.balance());
+      this.statsService.report({
+        game: 'mines',
+        won: false,
+        amountWon: 0,
+        amountLost: this.lastBet,
+        amountBet: this.lastBet,
+        wasAllIn: false,
+        currentBalance: this.balance(),
+      });
       this.history.update(h =>
         [
           {
@@ -208,6 +218,15 @@ export class Mines {
     this.balance.set(newBalance);
     this.balanceService.save(newBalance);
     this.phase.set(MinesPhase.CASHOUT);
+    this.statsService.report({
+      game: 'mines',
+      won: true,
+      amountWon: profit,
+      amountLost: 0,
+      amountBet: this.lastBet,
+      wasAllIn: false,
+      currentBalance: newBalance,
+    });
 
     this.history.update(h =>
       [

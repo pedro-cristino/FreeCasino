@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { StatsService } from '../services/stats.service';
 import { GameHeader } from '../game-header/game-header';
 
 export enum RoulettePhase {
@@ -187,7 +188,7 @@ export class Roulette implements OnInit {
   gamesLost = computed(() => this.gameState().history.filter(h => h.profit < 0).length);
   profitLoss = computed(() => Math.round(this.gameState().history.reduce((sum, h) => sum + h.profit, 0) * 100) / 100);
 
-  constructor(private balanceService: BalanceService) {
+  constructor(private balanceService: BalanceService, private statsService: StatsService) {
     toObservable(balanceService.balance)
       .pipe(filter(b => b > 0), takeUntilDestroyed())
       .subscribe(b => this.gameState.update(s => ({ ...s, balance: b })));
@@ -431,6 +432,15 @@ export class Roulette implements OnInit {
 
     this.isSpinning = false;
     this.balanceService.save(newBalance);
+    this.statsService.report({
+      game: 'roulette',
+      won: profit > 0,
+      amountWon: profit > 0 ? profit : 0,
+      amountLost: profit < 0 ? Math.abs(profit) : 0,
+      amountBet: totalBet,
+      wasAllIn: false,
+      currentBalance: newBalance,
+    });
     this.gameState.update(s => ({
       ...s,
       phase: RoulettePhase.RESULT,

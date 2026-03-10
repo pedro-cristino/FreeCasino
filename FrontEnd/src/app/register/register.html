@@ -1,19 +1,19 @@
 <div class="register-container">
   <div class="register-card">
     <div class="register-header">
-      <h1>🎰 Blackjack</h1>
-      <p>Create your account</p>
+      <h1>FreeCasino</h1>
+      <p>Créer un compte</p>
     </div>
 
     <form (ngSubmit)="onSubmit()" class="register-form">
       <div class="form-group">
-        <label for="username">Username</label>
+        <label for="username">Nom d'utilisateur</label>
         <input
           type="text"
           id="username"
           [(ngModel)]="username"
           name="username"
-          placeholder="Choose a username"
+          placeholder="Choisissez un pseudo"
           required
           [disabled]="loading()"
           class="form-input"
@@ -21,13 +21,13 @@
       </div>
 
       <div class="form-group">
-        <label for="password">Password</label>
+        <label for="password">Mot de passe</label>
         <input
           type="password"
           id="password"
           [(ngModel)]="password"
           name="password"
-          placeholder="Choose a password"
+          placeholder="Min. 6 caractères"
           required
           [disabled]="loading()"
           class="form-input"
@@ -35,37 +35,36 @@
       </div>
 
       <div class="form-group">
-        <label for="confirmPassword">Confirm Password</label>
+        <label for="confirmPassword">Confirmer le mot de passe</label>
         <input
           type="password"
           id="confirmPassword"
           [(ngModel)]="confirmPassword"
           name="confirmPassword"
-          placeholder="Confirm your password"
+          placeholder="Répétez le mot de passe"
           required
           [disabled]="loading()"
           class="form-input"
         />
       </div>
 
-      <div class="error-message" *ngIf="errorMessage()">
-        {{ errorMessage() }}
-      </div>
-
-      <div class="success-message" *ngIf="successMessage()">
-        {{ successMessage() }}
-      </div>
+      @if (errorMessage()) {
+        <div class="error-message">{{ errorMessage() }}</div>
+      }
+      @if (successMessage()) {
+        <div class="success-message">{{ successMessage() }}</div>
+      }
 
       <button
         type="submit"
         class="register-btn"
         [disabled]="loading() || !username() || !password() || !confirmPassword()"
       >
-        {{ loading() ? 'Creating account...' : 'Create Account' }}
+        {{ loading() ? 'Création...' : "S'inscrire" }}
       </button>
 
       <div class="login-link">
-        Already have an account? <a routerLink="/login">Login here</a>
+        Déjà un compte ? <a routerLink="/login">Se connecter</a>
       </div>
     </form>
   </div>

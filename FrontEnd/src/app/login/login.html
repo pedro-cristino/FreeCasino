@@ -1,19 +1,19 @@
 <div class="login-container">
   <div class="login-card">
     <div class="login-header">
-      <h1>🎰 Free Casino</h1>
-      <p>Please login to play</p>
+      <h1>FreeCasino</h1>
+      <p>Connectez-vous pour jouer</p>
     </div>
 
     <form (ngSubmit)="onSubmit()" class="login-form">
       <div class="form-group">
-        <label for="username">Username</label>
+        <label for="username">Nom d'utilisateur</label>
         <input
           type="text"
           id="username"
           [(ngModel)]="username"
           name="username"
-          placeholder="Enter username"
+          placeholder="Votre pseudo"
           required
           [disabled]="loading()"
           class="form-input"
@@ -21,37 +21,33 @@
       </div>
 
       <div class="form-group">
-        <label for="password">Password</label>
+        <label for="password">Mot de passe</label>
         <input
           type="password"
           id="password"
           [(ngModel)]="password"
           name="password"
-          placeholder="Enter password"
+          placeholder="Votre mot de passe"
           required
           [disabled]="loading()"
           class="form-input"
         />
       </div>
 
-      <div class="error-message" *ngIf="errorMessage()">
-        {{ errorMessage() }}
-      </div>
+      @if (errorMessage()) {
+        <div class="error-message">{{ errorMessage() }}</div>
+      }
 
       <button
         type="submit"
         class="login-btn"
         [disabled]="loading() || !username() || !password()"
       >
-        {{ loading() ? 'Logging in...' : 'Login' }}
+        {{ loading() ? 'Connexion...' : 'Se connecter' }}
       </button>
 
-      <div class="hint">
-        <small>Hint: username = "user", password = "password"</small>
-      </div>
-
       <div class="register-link">
-        Don't have an account? <a routerLink="/register">Create one</a>
+        Pas encore de compte ? <a routerLink="/register">S'inscrire</a>
       </div>
     </form>
   </div>

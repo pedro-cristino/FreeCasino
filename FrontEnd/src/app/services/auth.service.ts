@@ -15,6 +15,11 @@ export interface LoginResponse {
   message?: string;
 }
 
+export interface RegisterResponse {
+  success: boolean;
+  message?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -26,6 +31,10 @@ export class AuthService {
   isAuthenticated = signal<boolean>(this.hasToken());
 
   constructor(private http: HttpClient, private router: Router) {}
+
+  register(username: string, password: string): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, { username, password });
+  }
 
   login(username: string, password: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { username, password }).pipe(

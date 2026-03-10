@@ -5,6 +5,7 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { BalanceService } from '../services/balance.service';
+import { StatsService } from '../services/stats.service';
 import { GameHeader } from '../game-header/game-header';
 
 // Enums
@@ -152,7 +153,11 @@ export class Blackjack implements OnInit {
 
   isResolving = false;
 
-  constructor(public authService: AuthService, private balanceService: BalanceService) {
+  constructor(
+    public authService: AuthService,
+    private balanceService: BalanceService,
+    private statsService: StatsService,
+  ) {
     toObservable(balanceService.balance).pipe(
       filter(b => b > 0),
       takeUntilDestroyed()
@@ -592,15 +597,22 @@ export class Blackjack implements OnInit {
     const dealerBust = state.dealerHand.status === HandStatus.BUST;
     let totalWinnings = 0;
 
+    type HandStat = { hand: Hand; wasBlackjack: boolean; wasSplit: boolean };
+    const handStats: HandStat[] = [];
+
     for (const seat of state.seats) {
       if (!seat.active) continue;
 
-      // Resolve main hand
-      totalWinnings += this.resolveHand(seat.mainHand, dealerValue, dealerBust);
+      // Capture blackjack status before resolveHand() changes it
+      const mainWasBlackjack = seat.mainHand.status === HandStatus.BLACKJACK;
+      const hasSplit = !!seat.splitHand;
 
-      // Resolve split hand
+      totalWinnings += this.resolveHand(seat.mainHand, dealerValue, dealerBust);
+      handStats.push({ hand: seat.mainHand, wasBlackjack: mainWasBlackjack, wasSplit: hasSplit });
+
       if (seat.splitHand) {
         totalWinnings += this.resolveHand(seat.splitHand, dealerValue, dealerBust);
+        handStats.push({ hand: seat.splitHand, wasBlackjack: false, wasSplit: true });
       }
     }
 
@@ -625,6 +637,23 @@ export class Blackjack implements OnInit {
     this.isResolving = false;
     this.gameState.set({ ...state });
     this.balanceService.save(state.playerBalance);
+
+    for (const { hand, wasBlackjack, wasSplit } of handStats) {
+      if (hand.status === HandStatus.PUSH) continue;
+      const won = hand.status === HandStatus.WIN;
+      const amountWon = won ? (wasBlackjack ? Math.round(hand.bet * 1.5 * 100) / 100 : hand.bet) : 0;
+      this.statsService.report({
+        game: 'blackjack',
+        won,
+        amountWon,
+        amountLost: won ? 0 : hand.bet,
+        amountBet: hand.bet,
+        wasAllIn: false,
+        currentBalance: state.playerBalance,
+        wasBlackjack,
+        wasSplit,
+      });
+    }
   }
 
   private resolveHand(hand: Hand, dealerValue: number, dealerBust: boolean): number {

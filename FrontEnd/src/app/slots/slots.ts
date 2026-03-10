@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { StatsService } from '../services/stats.service';
 import { GameHeader } from '../game-header/game-header';
 
 const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '🔔', '💎', '7️⃣'];
@@ -76,7 +77,7 @@ export class Slots implements OnDestroy {
   private spinInterval: ReturnType<typeof setInterval> | null = null;
   private timeouts: ReturnType<typeof setTimeout>[] = [];
 
-  constructor(private balanceService: BalanceService) {
+  constructor(private balanceService: BalanceService, private statsService: StatsService) {
     toObservable(balanceService.balance)
       .pipe(
         filter(b => b > 0),
@@ -196,6 +197,15 @@ export class Slots implements OnDestroy {
 
     this.balance.set(newBalance);
     this.balanceService.save(newBalance);
+    this.statsService.report({
+      game: 'slots',
+      won: profit > 0,
+      amountWon: profit > 0 ? profit : 0,
+      amountLost: profit < 0 ? Math.abs(profit) : 0,
+      amountBet: betAmount,
+      wasAllIn: false,
+      currentBalance: newBalance,
+    });
     this.message.set(msg);
     this.phase.set(SlotsPhase.RESULT);
     this.history.update(h =>

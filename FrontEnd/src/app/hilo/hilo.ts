@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { StatsService } from '../services/stats.service';
 import { GameHeader } from '../game-header/game-header';
 
 export enum HiLoPhase {
@@ -102,7 +103,7 @@ export class HiLo implements OnInit {
     return card ? this.calcMultiplier(card.value, 'lower') : 0;
   });
 
-  constructor(private balanceService: BalanceService) {
+  constructor(private balanceService: BalanceService, private statsService: StatsService) {
     toObservable(balanceService.balance)
       .pipe(filter(b => b > 0), takeUntilDestroyed())
       .subscribe(b => this.gameState.update(s => ({ ...s, balance: b })));
@@ -212,6 +213,15 @@ export class HiLo implements OnInit {
       updatedState.history = [entry, ...s.history].slice(0, 10);
       this.gameState.set(updatedState);
       this.balanceService.save(s.balance);
+      this.statsService.report({
+        game: 'hilo',
+        won: false,
+        amountWon: 0,
+        amountLost: s.bet,
+        amountBet: s.bet,
+        wasAllIn: false,
+        currentBalance: s.balance,
+      });
     } else {
       this.gameState.set(updatedState);
     }
@@ -261,6 +271,16 @@ export class HiLo implements OnInit {
     });
 
     this.balanceService.save(newBalance);
+    this.statsService.report({
+      game: 'hilo',
+      won: true,
+      amountWon: winnings - s.bet,
+      amountLost: 0,
+      amountBet: s.bet,
+      wasAllIn: false,
+      currentBalance: newBalance,
+      hiloStreak: s.streak,
+    });
   }
 
   newRound(): void {

@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { StatsService } from '../services/stats.service';
 import { GameHeader } from '../game-header/game-header';
 
 const CANVAS_W = 600;
@@ -96,7 +97,7 @@ export class Crash implements AfterViewInit, OnDestroy {
       this.phase() !== CrashPhase.FLYING
   );
 
-  constructor(private balanceService: BalanceService) {
+  constructor(private balanceService: BalanceService, private statsService: StatsService) {
     toObservable(balanceService.balance)
       .pipe(filter(b => b > 0), takeUntilDestroyed())
       .subscribe(b => this.balance.set(b));
@@ -164,6 +165,16 @@ export class Crash implements AfterViewInit, OnDestroy {
     const newBalance = Math.round((this.balance() + winAmount) * 100) / 100;
     this.balance.set(newBalance);
     this.balanceService.save(newBalance);
+    this.statsService.report({
+      game: 'crash',
+      won: true,
+      amountWon: Math.round((winAmount - this.activeBet()) * 100) / 100,
+      amountLost: 0,
+      amountBet: this.activeBet(),
+      wasAllIn: false,
+      currentBalance: newBalance,
+      crashMultiplier: mult,
+    });
   }
 
   playAgain(): void {
@@ -218,6 +229,18 @@ export class Crash implements AfterViewInit, OnDestroy {
       profit = -this.activeBet();
       balance = this.balance();
       this.balanceService.save(balance);
+    }
+
+    if (!this.cashedOut()) {
+      this.statsService.report({
+        game: 'crash',
+        won: false,
+        amountWon: 0,
+        amountLost: this.activeBet(),
+        amountBet: this.activeBet(),
+        wasAllIn: false,
+        currentBalance: balance,
+      });
     }
 
     this.recentCrashes.update(r => [crashMult, ...r].slice(0, 12));

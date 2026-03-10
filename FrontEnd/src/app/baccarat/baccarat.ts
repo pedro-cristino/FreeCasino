@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { StatsService } from '../services/stats.service';
 import { GameHeader } from '../game-header/game-header';
 
 export enum BaccaratPhase {
@@ -85,7 +86,7 @@ export class Baccarat implements OnInit {
   betInputs = { player: 0, banker: 0, tie: 0 };
   lastBetInputs = { player: 0, banker: 0, tie: 0 };
 
-  constructor(private balanceService: BalanceService) {
+  constructor(private balanceService: BalanceService, private statsService: StatsService) {
     toObservable(balanceService.balance).pipe(
       filter(b => b > 0),
       takeUntilDestroyed()
@@ -303,6 +304,15 @@ export class Baccarat implements OnInit {
 
     this.isResolving = false;
     this.balanceService.save(newBalance);
+    this.statsService.report({
+      game: 'baccarat',
+      won: profit > 0,
+      amountWon: profit > 0 ? profit : 0,
+      amountLost: profit < 0 ? Math.abs(profit) : 0,
+      amountBet: totalBet,
+      wasAllIn: false,
+      currentBalance: newBalance,
+    });
     this.gameState.update(s => ({
       ...s,
       phase: BaccaratPhase.RESULT,

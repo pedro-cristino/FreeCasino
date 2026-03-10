@@ -53,15 +53,16 @@ export class Register implements OnInit {
 
     this.loading.set(true);
 
-    // TODO: Implement registration API call
-    // For now, just show a success message
-    setTimeout(() => {
-      this.loading.set(false);
-      this.successMessage.set('Account created successfully! Redirecting to login...');
-
-      setTimeout(() => {
-        this.router.navigate(['/login']);
-      }, 2000);
-    }, 1000);
+    this.authService.register(this.username(), this.password()).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.successMessage.set('Compte créé ! Redirection vers la connexion...');
+        setTimeout(() => this.router.navigate(['/login']), 2000);
+      },
+      error: err => {
+        this.loading.set(false);
+        this.errorMessage.set(err.error?.message ?? 'Erreur lors de la création du compte');
+      },
+    });
   }
 }
