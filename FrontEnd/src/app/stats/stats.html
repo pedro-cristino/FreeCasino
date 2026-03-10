@@ -1,6 +1,11 @@
 <div class="stats-page">
   <div class="page-header">
-    <h1 class="page-title">📊 Stats</h1>
+    <div class="title-row">
+      <h1 class="page-title">📊 Stats</h1>
+      <button class="reset-btn" (click)="reset()" [disabled]="resetting()">
+        {{ resetting() ? '…' : 'Reset' }}
+      </button>
+    </div>
     <p class="page-subtitle">Statistiques globales de votre compte</p>
   </div>
 
@@ -177,3 +182,17 @@
     <div class="loading">Chargement des stats…</div>
   }
 </div>
+
+@if (showConfirm()) {
+  <div class="confirm-overlay" (click)="cancelReset()">
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <div class="confirm-icon">⚠️</div>
+      <h2 class="confirm-title">Réinitialiser les stats ?</h2>
+      <p class="confirm-body">Toutes tes statistiques seront effacées définitivement. Cette action est irréversible.</p>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" (click)="cancelReset()">Annuler</button>
+        <button class="confirm-ok" (click)="confirmReset()">Oui, reset</button>
+      </div>
+    </div>
+  </div>
+}

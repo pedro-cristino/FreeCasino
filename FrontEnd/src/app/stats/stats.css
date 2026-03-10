@@ -25,6 +25,37 @@
   margin: 0 0 8px;
 }
 
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.reset-btn {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.reset-btn:hover:not(:disabled) {
+  background: rgba(231, 76, 60, 0.25);
+  border-color: rgba(231, 76, 60, 0.7);
+}
+
+.reset-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .page-subtitle {
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.35);
@@ -215,6 +246,87 @@
 .stat-card.accent-red   { border-color: rgba(231, 76, 60, 0.25);  }
 .stat-card.accent-blue  { border-color: rgba(52, 152, 219, 0.25); }
 .stat-card.accent-gold  { border-color: rgba(212, 175, 55, 0.25); }
+
+/* ── Confirm modal ───────────────────────────────────────────────────────── */
+
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirm-modal {
+  background: #0e2a1a;
+  border: 1px solid rgba(231, 76, 60, 0.35);
+  border-radius: 16px;
+  padding: 32px 28px;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+}
+
+.confirm-icon {
+  font-size: 2.2rem;
+  margin-bottom: 12px;
+}
+
+.confirm-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 10px;
+}
+
+.confirm-body {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.confirm-cancel,
+.confirm-ok {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.confirm-cancel {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.confirm-cancel:hover {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.confirm-ok {
+  border: 1px solid rgba(231, 76, 60, 0.5);
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+.confirm-ok:hover {
+  background: rgba(231, 76, 60, 0.3);
+  border-color: rgba(231, 76, 60, 0.8);
+}
 
 /* ── Loading ─────────────────────────────────────────────────────────────── */
 

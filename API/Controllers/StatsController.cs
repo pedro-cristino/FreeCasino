@@ -91,6 +91,18 @@ public class StatsController(CasinoDbContext db) : ControllerBase
 
         return Ok(new { success = true });
     }
+
+    [HttpDelete("reset")]
+    public async Task<IActionResult> ResetStats()
+    {
+        var username = ResolveUsername();
+        if (username is null) return Unauthorized();
+
+        await db.Database.ExecuteSqlRawAsync(
+            "DELETE FROM UserStats WHERE Username = {0}", username);
+
+        return Ok(new { success = true });
+    }
 }
 
 public class GameResultDto

@@ -76,4 +76,8 @@ export class StatsService {
   getStats() {
     return this.http.get<UserStats>(this.apiUrl);
   }
+
+  resetStats() {
+    return this.http.delete(`${this.apiUrl}/reset`);
+  }
 }

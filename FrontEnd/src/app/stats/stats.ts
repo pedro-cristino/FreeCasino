@@ -11,6 +11,8 @@ import { StatsService, UserStats } from '../services/stats.service';
 })
 export class Stats implements OnInit {
   stats = signal<UserStats | null>(null);
+  resetting = signal(false);
+  showConfirm = signal(false);
 
   readonly games: {
     key: string;
@@ -81,6 +83,30 @@ export class Stats implements OnInit {
 
   ngOnInit(): void {
     this.statsService.getStats().subscribe(s => this.stats.set(s));
+  }
+
+  reset(): void {
+    this.showConfirm.set(true);
+  }
+
+  cancelReset(): void {
+    this.showConfirm.set(false);
+  }
+
+  confirmReset(): void {
+    if (this.resetting()) return;
+    this.showConfirm.set(false);
+    this.resetting.set(true);
+    this.statsService.resetStats().subscribe({
+      next: () => {
+        this.stats.set(null);
+        this.statsService.getStats().subscribe(s => {
+          this.stats.set(s);
+          this.resetting.set(false);
+        });
+      },
+      error: () => this.resetting.set(false),
+    });
   }
 
   winRate(played: number, wins: number): number {
