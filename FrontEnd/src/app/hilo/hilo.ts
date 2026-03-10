@@ -1,11 +1,7 @@
 import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
-import { BalanceService } from '../services/balance.service';
-import { StatsService } from '../services/stats.service';
-import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
+import { BaseGame, CHIP_VALUES } from '../base-game';
 
 export enum HiLoPhase {
   BETTING = 'BETTING',
@@ -63,9 +59,11 @@ export interface HiLoState {
   templateUrl: './hilo.html',
   styleUrl: './hilo.css',
 })
-export class HiLo implements OnInit {
+export class HiLo extends BaseGame implements OnInit {
+  protected readonly gameName = 'hilo';
+
   readonly HiLoPhase = HiLoPhase;
-  readonly CHIP_VALUES = [1, 5, 10, 25, 50, 100];
+  readonly CHIP_VALUES = CHIP_VALUES;
 
   gameState = signal<HiLoState>({
     phase: HiLoPhase.BETTING,
@@ -104,17 +102,8 @@ export class HiLo implements OnInit {
     return card ? this.calcMultiplier(card.value, 'lower') : 0;
   });
 
-  private gameBoost = 0;
-
-  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
-    toObservable(balanceService.balance)
-      .pipe(filter(b => b > 0), takeUntilDestroyed())
-      .subscribe(b => this.gameState.update(s => ({ ...s, balance: b })));
-    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['hilo'] ?? 0; });
-  }
-
-  ngOnInit(): void {
-    this.balanceService.load();
+  protected override onBalanceUpdate(balance: number): void {
+    this.gameState.update(s => ({ ...s, balance }));
   }
 
   // ── Betting ──────────────────────────────────────────────────────────────

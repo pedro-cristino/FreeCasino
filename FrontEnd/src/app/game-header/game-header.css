@@ -147,7 +147,23 @@
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
-  .stats-panel { flex-direction: column; align-items: center; gap: 8px; }
-  .stats-right { gap: 14px; }
+  .stats-panel {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+  .stats-right {
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
   .stats-title { font-size: 1.3rem; letter-spacing: 3px; }
+  .level-block { min-width: unset; width: 100%; align-items: center; }
+}
+
+@media (max-width: 400px) {
+  .stats-title { font-size: 1.1rem; letter-spacing: 2px; }
+  .stat-value { font-size: 0.95rem; }
+  .stats-right { gap: 10px; }
 }

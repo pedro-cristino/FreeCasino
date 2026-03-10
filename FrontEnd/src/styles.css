@@ -24,3 +24,7 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #fff;
 }
+
+@media (max-width: 480px) {
+  .game-wrapper { padding: 10px 10px; }
+}

@@ -4,3 +4,5 @@ v2.mp4
 API/.vs
 API/bin
 API/obj
+API.Tests/obj/
+API.Tests/bin/

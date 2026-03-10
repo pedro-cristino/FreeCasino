@@ -292,3 +292,131 @@
   background: rgba(231, 76, 60, 0.15);
   border-color: #e74c3c;
 }
+
+/* ── Nav collapse (desktop: horizontal row) ──────────────────────────────── */
+
+.nav-collapse {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 0;
+  justify-content: space-between;
+}
+
+/* ── Hamburger ───────────────────────────────────────────────────────────── */
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 4px;
+  flex-shrink: 0;
+}
+
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #d4af37;
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── Mobile nav ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .nav-container {
+    padding: 0.7rem 1rem;
+    flex-wrap: wrap;
+    gap: 0;
+    position: relative;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .nav-collapse {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 0;
+    border-top: 1px solid rgba(212, 175, 55, 0.15);
+    margin-top: 0.5rem;
+    padding-top: 8px;
+    padding-bottom: 12px;
+  }
+
+  .nav-collapse.open {
+    display: flex;
+  }
+
+  .nav-menu {
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+  }
+
+  .nav-item {
+    width: 100%;
+  }
+
+  .nav-link,
+  .nav-dropdown-toggle {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0.7rem 1rem;
+    box-sizing: border-box;
+  }
+
+  .nav-dropdown {
+    width: 100%;
+  }
+
+  .dropdown-menu {
+    position: static;
+    border: none;
+    border-radius: 8px;
+    box-shadow: none;
+    background: rgba(255, 255, 255, 0.03);
+    margin: 4px 0 4px 12px;
+    padding: 4px;
+  }
+
+  .dropdown-menu.open {
+    animation: none;
+  }
+
+  .nav-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 10px;
+    margin-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    width: 100%;
+  }
+
+  .nav-balance {
+    width: 100%;
+    font-size: 1.05rem;
+    text-align: left;
+    min-width: unset;
+  }
+
+  .save-btn,
+  .restart-btn,
+  .logout-btn {
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+  }
+}

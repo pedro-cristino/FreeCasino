@@ -7,15 +7,8 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AchievementsController(CasinoDbContext db) : ControllerBase
+public class AchievementsController(CasinoDbContext db) : BaseApiController
 {
-    private string? ResolveUsername()
-    {
-        var auth = Request.Headers.Authorization.ToString();
-        if (!auth.StartsWith("Bearer ")) return null;
-        return UserStore.GetUsername(auth["Bearer ".Length..]);
-    }
-
     [HttpGet]
     public async Task<IActionResult> GetAchievements()
     {

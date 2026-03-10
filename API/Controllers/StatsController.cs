@@ -7,15 +7,8 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class StatsController(CasinoDbContext db) : ControllerBase
+public class StatsController(CasinoDbContext db) : BaseApiController
 {
-    private string? ResolveUsername()
-    {
-        var auth = Request.Headers.Authorization.ToString();
-        if (!auth.StartsWith("Bearer ")) return null;
-        return UserStore.GetUsername(auth["Bearer ".Length..]);
-    }
-
     [HttpGet]
     public async Task<IActionResult> GetStats()
     {
@@ -36,14 +29,39 @@ public class StatsController(CasinoDbContext db) : ControllerBase
         await db.Database.ExecuteSqlRawAsync(
             "INSERT OR IGNORE INTO UserStats (Username) VALUES ({0})", username);
 
-        int won     = dto.Won ? 1 : 0;
-        int lost    = dto.Won ? 0 : 1;
-        int allIn   = dto.WasAllIn ? 1 : 0;
-        int bj      = dto.WasBlackjack ? 1 : 0;
-        int split   = dto.WasSplit ? 1 : 0;
-        double pct  = dto.AmountBet > 0 ? Math.Round(dto.AmountWon / dto.AmountBet * 100, 2) : 0;
-        double cm   = dto.CrashMultiplier ?? 0.0;
-        double hs   = dto.HiloStreak ?? 0;
+        await ExecuteStatsUpdate(username, dto);
+
+        var newAchievements = await CheckAndUnlockAchievements(username, dto);
+
+        var levelUp = await AwardXpAndCheckLevelUp(username, dto.AmountBet);
+
+        return Ok(new { newAchievements, levelUp, xpGained = Math.Round(dto.AmountBet * 0.1, 1) });
+    }
+
+    [HttpDelete("reset")]
+    public async Task<IActionResult> ResetStats()
+    {
+        var username = ResolveUsername();
+        if (username is null) return Unauthorized();
+
+        await db.Database.ExecuteSqlRawAsync(
+            "DELETE FROM UserStats WHERE Username = {0}", username);
+
+        return Ok(new { success = true });
+    }
+
+    // ── Private helpers ──────────────────────────────────────────────────────
+
+    private async Task ExecuteStatsUpdate(string username, GameResultDto dto)
+    {
+        int won    = dto.Won ? 1 : 0;
+        int lost   = dto.Won ? 0 : 1;
+        int allIn  = dto.WasAllIn ? 1 : 0;
+        int bj     = dto.WasBlackjack ? 1 : 0;
+        int split  = dto.WasSplit ? 1 : 0;
+        double pct = dto.AmountBet > 0 ? Math.Round(dto.AmountWon / dto.AmountBet * 100, 2) : 0;
+        double cm  = dto.CrashMultiplier ?? 0.0;
+        double hs  = dto.HiloStreak ?? 0;
 
         // Single atomic UPDATE — no read-modify-write, no lost updates
         await db.Database.ExecuteSqlRawAsync("""
@@ -89,71 +107,77 @@ public class StatsController(CasinoDbContext db) : ControllerBase
             username, won, lost, dto.AmountWon, dto.AmountLost,
             pct, allIn, dto.CurrentBalance, dto.Game,
             bj, split, cm, hs);
+    }
 
-        // ── Achievement check ──────────────────────────────────────────────
+    private async Task<List<object>> CheckAndUnlockAchievements(string username, GameResultDto dto)
+    {
+        List<object> newAchievements = [];
+
         var stats = await db.UserStats.AsNoTracking()
             .FirstOrDefaultAsync(s => s.Username == username);
 
-        List<object> newAchievements = [];
+        if (stats is null)
+            return newAchievements;
 
-        if (stats is not null)
+        var winsForGame = dto.Game switch
         {
-            var winsForGame = dto.Game switch
+            "blackjack" => stats.BlackjackWins,
+            "baccarat"  => stats.BaccaratWins,
+            "roulette"  => stats.RouletteWins,
+            "slots"     => stats.SlotsWins,
+            "mines"     => stats.MinesWins,
+            "plinko"    => stats.PlinkoWins,
+            "crash"     => stats.CrashWins,
+            "hilo"      => stats.HiloWins,
+            _           => 0,
+        };
+
+        var eligible = AchievementRegistry.All
+            .Where(a => a.Game == dto.Game && a.WinsRequired <= winsForGame)
+            .Select(a => a.Key)
+            .ToHashSet();
+
+        if (eligible.Count == 0)
+            return newAchievements;
+
+        var alreadyUnlocked = await db.UserAchievements
+            .Where(a => a.Username == username && eligible.Contains(a.AchievementKey))
+            .Select(a => a.AchievementKey)
+            .ToListAsync();
+
+        var toUnlock = eligible.Except(alreadyUnlocked).ToList();
+
+        foreach (var key in toUnlock)
+        {
+            db.UserAchievements.Add(new UserAchievement
             {
-                "blackjack" => stats.BlackjackWins,
-                "baccarat"  => stats.BaccaratWins,
-                "roulette"  => stats.RouletteWins,
-                "slots"     => stats.SlotsWins,
-                "mines"     => stats.MinesWins,
-                "plinko"    => stats.PlinkoWins,
-                "crash"     => stats.CrashWins,
-                "hilo"      => stats.HiloWins,
-                _           => 0,
-            };
+                Username       = username,
+                AchievementKey = key,
+                UnlockedAt     = DateTime.UtcNow.ToString("O"),
+            });
 
-            var eligible = AchievementRegistry.All
-                .Where(a => a.Game == dto.Game && a.WinsRequired <= winsForGame)
-                .Select(a => a.Key)
-                .ToHashSet();
-
-            if (eligible.Count > 0)
-            {
-                var alreadyUnlocked = await db.UserAchievements
-                    .Where(a => a.Username == username && eligible.Contains(a.AchievementKey))
-                    .Select(a => a.AchievementKey)
-                    .ToListAsync();
-
-                var toUnlock = eligible.Except(alreadyUnlocked).ToList();
-
-                foreach (var key in toUnlock)
+            if (AchievementRegistry.ByKey.TryGetValue(key, out var def))
+                newAchievements.Add(new
                 {
-                    db.UserAchievements.Add(new UserAchievement
-                    {
-                        Username       = username,
-                        AchievementKey = key,
-                        UnlockedAt     = DateTime.UtcNow.ToString("O"),
-                    });
-
-                    if (AchievementRegistry.ByKey.TryGetValue(key, out var def))
-                        newAchievements.Add(new
-                        {
-                            def.Key,
-                            def.Name,
-                            def.Description,
-                            def.BoostPercent,
-                        });
-                }
-
-                if (toUnlock.Count > 0)
-                    await db.SaveChangesAsync();
-            }
+                    def.Key,
+                    def.Name,
+                    def.Description,
+                    def.BoostPercent,
+                });
         }
 
-        // ── XP award ──────────────────────────────────────────────────────────
+        if (toUnlock.Count > 0)
+            await db.SaveChangesAsync();
+
+        return newAchievements;
+    }
+
+    private async Task<object?> AwardXpAndCheckLevelUp(string username, double amountBet)
+    {
         var userBefore = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username);
         var previousLevel = userBefore?.Level ?? 1;
 
-        var xpGained = Math.Round(dto.AmountBet * 0.1, 1);
+        var xpGained = Math.Round(amountBet * 0.1, 1);
         await db.Database.ExecuteSqlRawAsync("""
             UPDATE Users SET
                 Xp    = Xp + {1},
@@ -164,27 +188,14 @@ public class StatsController(CasinoDbContext db) : ControllerBase
             WHERE Username = {0}
             """, username, xpGained);
 
-        object? levelUp = null;
         var userAfter = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username);
         if (userAfter != null && userAfter.Level > previousLevel)
         {
             var threshold = await db.LevelThresholds.FindAsync(userAfter.Level);
-            levelUp = new { level = userAfter.Level, name = threshold?.Name ?? "" };
+            return new { level = userAfter.Level, name = threshold?.Name ?? "" };
         }
 
-        return Ok(new { newAchievements, levelUp, xpGained });
-    }
-
-    [HttpDelete("reset")]
-    public async Task<IActionResult> ResetStats()
-    {
-        var username = ResolveUsername();
-        if (username is null) return Unauthorized();
-
-        await db.Database.ExecuteSqlRawAsync(
-            "DELETE FROM UserStats WHERE Username = {0}", username);
-
-        return Ok(new { success = true });
+        return null;
     }
 }
 

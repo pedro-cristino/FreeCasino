@@ -6,15 +6,8 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class HighScoreController(CasinoDbContext db) : ControllerBase
+public class HighScoreController(CasinoDbContext db) : BaseApiController
 {
-    private string? ResolveUsername()
-    {
-        var auth = Request.Headers.Authorization.ToString();
-        if (!auth.StartsWith("Bearer ")) return null;
-        return UserStore.GetUsername(auth["Bearer ".Length..]);
-    }
-
     // GET /api/highscore?game=blackjack — global leaderboard (top 20, optional game filter)
     [HttpGet]
     public async Task<IActionResult> GetLeaderboard([FromQuery] string? game)

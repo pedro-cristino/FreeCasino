@@ -1,73 +1,82 @@
 <nav class="navbar" *ngIf="authService.isAuthenticated()">
   <div class="nav-container">
     <a class="nav-brand" routerLink="/home">FreeCasino</a>
-    <ul class="nav-menu">
-      <li class="nav-item nav-dropdown" (mouseenter)="gamesOpen = true" (mouseleave)="gamesOpen = false">
-        <button class="nav-link nav-dropdown-toggle" [class.dropdown-open]="gamesOpen">
-          🎮 Jeux <span class="dropdown-arrow">▾</span>
+
+    <button class="hamburger" [class.open]="mobileOpen" (click)="mobileOpen = !mobileOpen" aria-label="Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <div class="nav-collapse" [class.open]="mobileOpen">
+      <ul class="nav-menu">
+        <li class="nav-item nav-dropdown" (mouseenter)="gamesOpen = true" (mouseleave)="gamesOpen = false">
+          <button class="nav-link nav-dropdown-toggle" [class.dropdown-open]="gamesOpen" (click)="gamesOpen = !gamesOpen">
+            🎮 Jeux <span class="dropdown-arrow">▾</span>
+          </button>
+          <ul class="dropdown-menu" [class.open]="gamesOpen">
+            <li>
+              <a class="dropdown-item" routerLink="/blackjack" routerLinkActive="active" (click)="gamesOpen = false; mobileOpen = false">
+                🃏 Blackjack
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/baccarat" routerLinkActive="active" (click)="gamesOpen = false; mobileOpen = false">
+                🎴 Baccarat
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/roulette" routerLinkActive="active" (click)="gamesOpen = false; mobileOpen = false">
+                🎡 Roulette
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/slots" routerLinkActive="active" (click)="gamesOpen = false; mobileOpen = false">
+                🎰 Slots
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/mines" routerLinkActive="active" (click)="gamesOpen = false; mobileOpen = false">
+                💣 Mines
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/plinko" routerLinkActive="active" (click)="gamesOpen = false; mobileOpen = false">
+                🔵 Plinko
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/crash" routerLinkActive="active" (click)="gamesOpen = false; mobileOpen = false">
+                🚀 Crash
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/hilo" routerLinkActive="active" (click)="gamesOpen = false; mobileOpen = false">
+                🃏 Hi-Lo
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/leaderboard" routerLinkActive="active" (click)="mobileOpen = false">🏆 Leaderboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/achievements" routerLinkActive="active" (click)="mobileOpen = false">🏅 Succès</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/stats" routerLinkActive="active" (click)="mobileOpen = false">📊 Stats</a>
+        </li>
+      </ul>
+      <div class="nav-actions">
+        <span class="nav-balance">${{ balanceService.balance() }}</span>
+        <button class="save-btn"
+                *ngIf="balanceService.balance() > 1000"
+                (click)="showSaveConfirm = true; mobileOpen = false">
+          Sauvegarder
         </button>
-        <ul class="dropdown-menu" [class.open]="gamesOpen">
-          <li>
-            <a class="dropdown-item" routerLink="/blackjack" routerLinkActive="active" (click)="gamesOpen = false">
-              🃏 Blackjack
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="/baccarat" routerLinkActive="active" (click)="gamesOpen = false">
-              🎴 Baccarat
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="/roulette" routerLinkActive="active" (click)="gamesOpen = false">
-              🎡 Roulette
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="/slots" routerLinkActive="active" (click)="gamesOpen = false">
-              🎰 Slots
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="/mines" routerLinkActive="active" (click)="gamesOpen = false">
-              💣 Mines
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="/plinko" routerLinkActive="active" (click)="gamesOpen = false">
-              🔵 Plinko
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="/crash" routerLinkActive="active" (click)="gamesOpen = false">
-              🚀 Crash
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="/hilo" routerLinkActive="active" (click)="gamesOpen = false">
-              🃏 Hi-Lo
-            </a>
-          </li>
-        </ul>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/leaderboard" routerLinkActive="active">🏆 Leaderboard</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/achievements" routerLinkActive="active">🏅 Succès</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/stats" routerLinkActive="active">📊 Stats</a>
-      </li>
-    </ul>
-    <div class="nav-actions">
-      <span class="nav-balance">${{ balanceService.balance() }}</span>
-      <button class="save-btn"
-              *ngIf="balanceService.balance() > 1000"
-              (click)="showSaveConfirm = true">
-        Sauvegarder
-      </button>
-      <button class="restart-btn" (click)="showRestartConfirm = true">Restart run</button>
-      <button class="logout-btn" (click)="authService.logout()">Logout</button>
+        <button class="restart-btn" (click)="showRestartConfirm = true; mobileOpen = false">Restart run</button>
+        <button class="logout-btn" (click)="authService.logout()">Logout</button>
+      </div>
     </div>
   </div>
 </nav>

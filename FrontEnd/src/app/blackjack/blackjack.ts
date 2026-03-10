@@ -1,13 +1,9 @@
-import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
 import { AuthService } from '../services/auth.service';
-import { BalanceService } from '../services/balance.service';
-import { StatsService } from '../services/stats.service';
-import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
+import { BaseGame } from '../base-game';
 
 // Enums
 export enum GamePhase {
@@ -102,10 +98,15 @@ export interface GameState {
   templateUrl: './blackjack.html',
   styleUrls: ['./blackjack.css']
 })
-export class Blackjack implements OnInit {
+export class Blackjack extends BaseGame implements OnInit {
+  protected readonly gameName = 'blackjack';
+
   // Expose enums to template
   GamePhase = GamePhase;
   HandStatus = HandStatus;
+
+  // Auth service (needed for logout button in template)
+  readonly authService = inject(AuthService);
 
   // State
   gameState = signal<GameState>({
@@ -153,27 +154,9 @@ export class Blackjack implements OnInit {
   lastSeatsCount = 1;
 
   isResolving = false;
-  private gameBoost = 0;
 
-  constructor(
-    public authService: AuthService,
-    private balanceService: BalanceService,
-    private statsService: StatsService,
-    private achievementsService: AchievementsService,
-  ) {
-    toObservable(balanceService.balance).pipe(
-      filter(b => b > 0),
-      takeUntilDestroyed()
-    ).subscribe(b => {
-      this.gameState.update(s => ({ ...s, playerBalance: b }));
-    });
-  }
-
-  ngOnInit(): void {
-    this.balanceService.load();
-    this.achievementsService.getBoosts().subscribe(b => {
-      this.gameBoost = b['blackjack'] ?? 0;
-    });
+  protected override onBalanceUpdate(balance: number): void {
+    this.gameState.update(s => ({ ...s, playerBalance: balance }));
   }
 
   logout(): void {
@@ -224,7 +207,7 @@ export class Blackjack implements OnInit {
   }
 
   // Hand evaluation
-  private evaluateHand(hand: Hand): void {
+  evaluateHand(hand: Hand): void {
     let value = 0;
     let aces = 0;
 
@@ -662,7 +645,7 @@ export class Blackjack implements OnInit {
     }
   }
 
-  private resolveHand(hand: Hand, dealerValue: number, dealerBust: boolean, boostPct = 0): number {
+  resolveHand(hand: Hand, dealerValue: number, dealerBust: boolean, boostPct = 0): number {
     if (hand.status === HandStatus.BUST) {
       hand.status = HandStatus.LOSS;
       return 0;

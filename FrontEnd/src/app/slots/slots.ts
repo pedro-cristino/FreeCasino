@@ -1,11 +1,7 @@
 import { Component, signal, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
-import { BalanceService } from '../services/balance.service';
-import { StatsService } from '../services/stats.service';
-import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
+import { BaseGame, CHIP_VALUES } from '../base-game';
 
 const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '🔔', '💎', '7️⃣'];
 const SYMBOL_WEIGHTS = [30, 25, 20, 15, 6, 3, 1];
@@ -55,11 +51,13 @@ function randomReel(): string[] {
   templateUrl: './slots.html',
   styleUrls: ['./slots.css'],
 })
-export class Slots implements OnDestroy {
+export class Slots extends BaseGame implements OnDestroy {
+  protected readonly gameName = 'slots';
+
   readonly SlotsPhase = SlotsPhase;
   readonly PAYOUTS = PAYOUTS;
   readonly SYMBOLS = SYMBOLS;
-  readonly CHIP_VALUES = [1, 5, 10, 25, 50, 100];
+  readonly CHIP_VALUES = CHIP_VALUES;
 
   phase = signal<SlotsPhase>(SlotsPhase.BETTING);
   balance = signal(0);
@@ -78,18 +76,15 @@ export class Slots implements OnDestroy {
   private spinInterval: ReturnType<typeof setInterval> | null = null;
   private timeouts: ReturnType<typeof setTimeout>[] = [];
 
-  private gameBoost = 0;
+  protected override onBalanceUpdate(b: number): void {
+    this.balance.set(b);
+  }
 
-  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
-    toObservable(balanceService.balance)
-      .pipe(
-        filter(b => b > 0),
-        takeUntilDestroyed()
-      )
-      .subscribe(b => {
-        this.balance.set(b);
-      });
-    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['slots'] ?? 0; });
+  override ngOnInit(): void {
+    // Slots does not call balanceService.load()
+    this.achievementsService.getBoosts().subscribe(boosts => {
+      this.gameBoost = boosts[this.gameName] ?? 0;
+    });
   }
 
   ngOnDestroy(): void {

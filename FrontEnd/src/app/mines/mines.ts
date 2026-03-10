@@ -1,11 +1,7 @@
 import { Component, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
-import { BalanceService } from '../services/balance.service';
-import { StatsService } from '../services/stats.service';
-import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
+import { BaseGame, CHIP_VALUES } from '../base-game';
 
 const GRID = 5;
 const N = GRID * GRID; // 25 tiles
@@ -36,7 +32,7 @@ export interface MinesHistory {
 }
 
 // Multiplier formula (same as Stake): 0.99 × ∏(i=0..r-1) (N-i)/(N-mines-i)
-function calcMult(revealed: number, mines: number): number {
+export function calcMult(revealed: number, mines: number): number {
   if (revealed <= 0) return 0;
   let mult = 0.99;
   for (let i = 0; i < revealed; i++) {
@@ -52,10 +48,12 @@ function calcMult(revealed: number, mines: number): number {
   templateUrl: './mines.html',
   styleUrls: ['./mines.css'],
 })
-export class Mines {
+export class Mines extends BaseGame {
+  protected readonly gameName = 'mines';
+
   readonly MinesPhase = MinesPhase;
   readonly GRID = GRID;
-  readonly CHIP_VALUES = [1, 5, 10, 25, 50, 100];
+  readonly CHIP_VALUES = CHIP_VALUES;
   readonly MINE_OPTIONS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 24];
 
   phase = signal<MinesPhase>(MinesPhase.SETUP);
@@ -97,13 +95,15 @@ export class Mines {
   gamesLost = computed(() => this.history().filter(h => !h.won).length);
   profitLoss = computed(() => Math.round(this.history().reduce((s, h) => s + h.profit, 0) * 100) / 100);
 
-  private gameBoost = 0;
+  protected override onBalanceUpdate(b: number): void {
+    this.balance.set(b);
+  }
 
-  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
-    toObservable(balanceService.balance)
-      .pipe(filter(b => b > 0), takeUntilDestroyed())
-      .subscribe(b => this.balance.set(b));
-    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['mines'] ?? 0; });
+  override ngOnInit(): void {
+    // Mines does not call balanceService.load()
+    this.achievementsService.getBoosts().subscribe(boosts => {
+      this.gameBoost = boosts[this.gameName] ?? 0;
+    });
   }
 
   // ── Bet controls ────────────────────────────────────────────────────────────

@@ -1,11 +1,7 @@
 import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
-import { BalanceService } from '../services/balance.service';
-import { StatsService } from '../services/stats.service';
-import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
+import { BaseGame, CHIP_VALUES } from '../base-game';
 
 export enum RoulettePhase {
   BETTING = 'BETTING',
@@ -64,9 +60,11 @@ interface BetZone {
   templateUrl: './roulette.html',
   styleUrls: ['./roulette.css'],
 })
-export class Roulette implements OnInit {
+export class Roulette extends BaseGame implements OnInit {
+  protected readonly gameName = 'roulette';
+
   readonly RoulettePhase = RoulettePhase;
-  readonly CHIP_VALUES = [1, 5, 10, 25, 50, 100];
+  readonly CHIP_VALUES = CHIP_VALUES;
 
   selectedChip = 10;
   allInSelected = false;
@@ -189,16 +187,16 @@ export class Roulette implements OnInit {
   gamesLost = computed(() => this.gameState().history.filter(h => h.profit < 0).length);
   profitLoss = computed(() => Math.round(this.gameState().history.reduce((sum, h) => sum + h.profit, 0) * 100) / 100);
 
-  private gameBoost = 0;
-
-  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
-    toObservable(balanceService.balance)
-      .pipe(filter(b => b > 0), takeUntilDestroyed())
-      .subscribe(b => this.gameState.update(s => ({ ...s, balance: b })));
-    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['roulette'] ?? 0; });
+  protected override onBalanceUpdate(balance: number): void {
+    this.gameState.update(s => ({ ...s, balance }));
   }
 
-  ngOnInit(): void {}
+  override ngOnInit(): void {
+    // Roulette does not call balanceService.load() — balance comes from the subscription
+    this.achievementsService.getBoosts().subscribe(boosts => {
+      this.gameBoost = boosts[this.gameName] ?? 0;
+    });
+  }
 
   // ── Color / helpers ─────────────────────────────────────────────────────────
 

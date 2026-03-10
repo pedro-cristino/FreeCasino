@@ -6,15 +6,8 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UserController(CasinoDbContext db) : ControllerBase
+public class UserController(CasinoDbContext db) : BaseApiController
 {
-    private string? ResolveUsername()
-    {
-        var auth = Request.Headers.Authorization.ToString();
-        if (!auth.StartsWith("Bearer ")) return null;
-        return UserStore.GetUsername(auth["Bearer ".Length..]);
-    }
-
     [HttpGet("balance")]
     public async Task<IActionResult> GetBalance()
     {
@@ -32,6 +25,9 @@ public class UserController(CasinoDbContext db) : ControllerBase
     {
         var username = ResolveUsername();
         if (username is null) return Unauthorized();
+
+        if (request.Balance < 0)
+            return BadRequest(new { message = "Balance cannot be negative." });
 
         var user = await db.Users.FindAsync(username);
         if (user is null) return NotFound();

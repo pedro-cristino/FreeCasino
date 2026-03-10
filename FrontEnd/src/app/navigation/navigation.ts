@@ -16,6 +16,7 @@ export class Navigation implements OnInit {
   showRestartConfirm = false;
   showSaveConfirm = false;
   gamesOpen = false;
+  mobileOpen = false;
 
   constructor(
     public authService: AuthService,

@@ -8,12 +8,8 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
-import { BalanceService } from '../services/balance.service';
-import { StatsService } from '../services/stats.service';
-import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
+import { BaseGame, CHIP_VALUES } from '../base-game';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
@@ -51,11 +47,13 @@ interface PathPoint {
   templateUrl: './crash.html',
   styleUrls: ['./crash.css'],
 })
-export class Crash implements AfterViewInit, OnDestroy {
+export class Crash extends BaseGame implements AfterViewInit, OnDestroy {
+  protected readonly gameName = 'crash';
+
   @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
   readonly CrashPhase = CrashPhase;
-  readonly CHIP_VALUES = [1, 5, 10, 25, 50, 100];
+  readonly CHIP_VALUES = CHIP_VALUES;
 
   phase = signal<CrashPhase>(CrashPhase.BETTING);
   balance = signal(0);
@@ -98,13 +96,15 @@ export class Crash implements AfterViewInit, OnDestroy {
       this.phase() !== CrashPhase.FLYING
   );
 
-  private gameBoost = 0;
+  protected override onBalanceUpdate(b: number): void {
+    this.balance.set(b);
+  }
 
-  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
-    toObservable(balanceService.balance)
-      .pipe(filter(b => b > 0), takeUntilDestroyed())
-      .subscribe(b => this.balance.set(b));
-    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['crash'] ?? 0; });
+  override ngOnInit(): void {
+    // Crash does not call balanceService.load()
+    this.achievementsService.getBoosts().subscribe(boosts => {
+      this.gameBoost = boosts[this.gameName] ?? 0;
+    });
   }
 
   ngAfterViewInit(): void {

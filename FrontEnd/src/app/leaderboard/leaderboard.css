@@ -76,6 +76,10 @@
 
 /* ── Table ───────────────────────────────────────────────────────────────── */
 
+.table-wrap {
+  width: 100%;
+}
+
 .lb-table {
   width: 100%;
   border-collapse: collapse;
@@ -202,9 +206,14 @@
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
-  .col-date,
-  .col-lvlname { display: none; }
-  .lb-table tbody td { padding: 11px 12px; }
+  .leaderboard-page { padding: 16px 12px; gap: 24px; }
+  .lb-title { font-size: 1.1rem; letter-spacing: 2px; padding: 16px 14px 14px; }
+  .lb-table tbody td { padding: 11px 10px; }
   .filter-bar { gap: 6px; }
   .filter-btn { font-size: 0.7rem; padding: 4px 9px; }
+}
+
+@media (max-width: 480px) {
+  .col-date,
+  .col-lvlname { display: none; }
 }

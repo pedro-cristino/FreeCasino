@@ -1,11 +1,7 @@
 import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
-import { BalanceService } from '../services/balance.service';
-import { StatsService } from '../services/stats.service';
-import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
+import { BaseGame } from '../base-game';
 
 export enum BaccaratPhase {
   BETTING = 'BETTING',
@@ -68,7 +64,9 @@ export interface BaccaratState {
   templateUrl: './baccarat.html',
   styleUrls: ['./baccarat.css']
 })
-export class Baccarat implements OnInit {
+export class Baccarat extends BaseGame implements OnInit {
+  protected readonly gameName = 'baccarat';
+
   BaccaratPhase = BaccaratPhase;
 
   gameState = signal<BaccaratState>({
@@ -86,26 +84,15 @@ export class Baccarat implements OnInit {
   isResolving = false;
   betInputs = { player: 0, banker: 0, tie: 0 };
   lastBetInputs = { player: 0, banker: 0, tie: 0 };
-  private gameBoost = 0;
-
-  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
-    toObservable(balanceService.balance).pipe(
-      filter(b => b > 0),
-      takeUntilDestroyed()
-    ).subscribe(b => {
-      this.gameState.update(s => ({ ...s, balance: b }));
-    });
-    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['baccarat'] ?? 0; });
-  }
-
-  ngOnInit(): void {
-    this.balanceService.load();
-  }
 
   gamesPlayed = computed(() => this.gameState().history.length);
   gamesWon = computed(() => this.gameState().history.filter(h => h.profit > 0).length);
   gamesLost = computed(() => this.gameState().history.filter(h => h.profit < 0).length);
   profitLoss = computed(() => Math.round(this.gameState().history.reduce((sum, h) => sum + h.profit, 0) * 100) / 100);
+
+  protected override onBalanceUpdate(balance: number): void {
+    this.gameState.update(s => ({ ...s, balance }));
+  }
 
   // ── Deck ────────────────────────────────────────────────────────────────────
 

@@ -8,12 +8,8 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
-import { BalanceService } from '../services/balance.service';
-import { StatsService } from '../services/stats.service';
-import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
+import { BaseGame, CHIP_VALUES } from '../base-game';
 
 const ROWS = 16;
 const SLOTS = ROWS + 1; // 17 slots
@@ -57,10 +53,12 @@ export interface PlinkoHistory {
   templateUrl: './plinko.html',
   styleUrls: ['./plinko.css'],
 })
-export class Plinko implements AfterViewInit, OnDestroy {
+export class Plinko extends BaseGame implements AfterViewInit, OnDestroy {
+  protected readonly gameName = 'plinko';
+
   @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  readonly CHIP_VALUES = [1, 5, 10, 25, 50, 100];
+  readonly CHIP_VALUES = CHIP_VALUES;
   readonly MULTIPLIERS = MULTIPLIERS;
 
   balance = signal(0);
@@ -79,13 +77,15 @@ export class Plinko implements AfterViewInit, OnDestroy {
     () => Math.round(this.history().reduce((s, h) => s + h.profit, 0) * 100) / 100
   );
 
-  private gameBoost = 0;
+  protected override onBalanceUpdate(b: number): void {
+    this.balance.set(b);
+  }
 
-  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
-    toObservable(balanceService.balance)
-      .pipe(filter(b => b > 0), takeUntilDestroyed())
-      .subscribe(b => this.balance.set(b));
-    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['plinko'] ?? 0; });
+  override ngOnInit(): void {
+    // Plinko does not call balanceService.load()
+    this.achievementsService.getBoosts().subscribe(boosts => {
+      this.gameBoost = boosts[this.gameName] ?? 0;
+    });
   }
 
   ngAfterViewInit(): void {

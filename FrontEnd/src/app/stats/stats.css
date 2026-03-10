@@ -383,7 +383,11 @@
 }
 
 @media (max-width: 480px) {
+  .stats-page { padding: 20px 12px 36px; }
+  .page-title { font-size: 1.5rem; letter-spacing: 3px; }
+  .page-header { margin-bottom: 28px; }
   .global-grid  { grid-template-columns: repeat(2, 1fr); }
   .records-grid { grid-template-columns: 1fr; }
   .games-grid   { grid-template-columns: 1fr; }
+  .title-row { flex-wrap: wrap; justify-content: center; gap: 10px; }
 }
