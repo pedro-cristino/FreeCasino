@@ -1,8 +1,31 @@
+# ── Videos / temp files ───────────────────────────────────────────────────
 exemple.mp4
-nul
 v2.mp4
-API/.vs
-API/bin
-API/obj
-API.Tests/obj/
+nul
+FrontEnd/nul
+
+# ── Secrets / tokens ──────────────────────────────────────────────────────
+ngrok.yml
+
+# ── Visual Studio ─────────────────────────────────────────────────────────
+.vs/
+API/.vs/
+*.user
+
+# ── .NET build output ─────────────────────────────────────────────────────
+API/bin/
+API/obj/
 API.Tests/bin/
+API.Tests/obj/
+
+# ── SQLite database files ─────────────────────────────────────────────────
+API/casino.db-shm
+API/casino.db-wal
+
+# ── Angular / Node ────────────────────────────────────────────────────────
+FrontEnd/node_modules/
+FrontEnd/.angular/
+FrontEnd/dist/
+
+# ── Claude Code settings ──────────────────────────────────────────────────
+.claude/settings.local.json
