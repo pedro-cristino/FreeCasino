@@ -1,0 +1,157 @@
+<div class="game-wrapper">
+
+  <app-game-header
+    title="🃏 HI-LO"
+    [balance]="gameState().balance"
+    [gamesPlayed]="gamesPlayed()"
+    [gamesWon]="gamesWon()"
+    [gamesLost]="gamesLost()"
+    [profitLoss]="profitLoss()"
+    [message]="gameState().message"
+  />
+
+  <!-- ── Betting Phase ─────────────────────────────────────────────────── -->
+  <div class="bet-panel" *ngIf="gameState().phase === HiLoPhase.BETTING">
+    <div class="bet-amount">${{ gameState().bet }}</div>
+    <div class="chip-row">
+      <button *ngFor="let v of CHIP_VALUES" class="chip" [class]="'chip-' + v" (click)="addChip(v)">
+        ${{ v }}
+      </button>
+      <button class="chip chip-allin" (click)="allIn()">MAX</button>
+      <button class="chip chip-clear" (click)="clearBet()">✕</button>
+    </div>
+    <button class="deal-btn" [disabled]="!canDeal()" (click)="deal()">Distribuer</button>
+  </div>
+
+  <!-- ── Game Area ─────────────────────────────────────────────────────── -->
+  <div class="game-area" *ngIf="gameState().phase !== HiLoPhase.BETTING">
+
+    <!-- Streak & Multiplier banner -->
+    <div class="streak-banner" *ngIf="gameState().streak > 0">
+      <span class="streak-label">STREAK</span>
+      <span class="streak-count">×{{ gameState().streak }}</span>
+      <span class="streak-sep">|</span>
+      <span class="mult-label">MULT</span>
+      <span class="streak-count">{{ gameState().multiplier }}×</span>
+      <span class="streak-sep">|</span>
+      <span class="cashout-preview">${{ pendingCashout() }}</span>
+    </div>
+
+    <!-- Cards row -->
+    <div class="cards-row">
+
+      <!-- Current card -->
+      <div class="card-slot">
+        <div class="card-wrap" *ngIf="gameState().currentCard as card">
+          <div class="hl-card" [class.red]="getCardColor(card.suit) === 'red'">
+            <div class="card-corner tl">
+              <span class="c-rank">{{ card.rank }}</span>
+              <span class="c-suit">{{ card.suit }}</span>
+            </div>
+            <div class="c-center">{{ card.suit }}</div>
+            <div class="card-corner br">
+              <span class="c-rank">{{ card.rank }}</span>
+              <span class="c-suit">{{ card.suit }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-label">Carte actuelle</div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="arrow-col" *ngIf="gameState().phase === HiLoPhase.REVEALED">
+        <div class="arrow-icon"
+          [class.arrow-win]="gameState().guessResult === 'win'"
+          [class.arrow-lose]="gameState().guessResult === 'lose'"
+          [class.arrow-tie]="gameState().guessResult === 'tie'">
+          @if (gameState().guessResult === 'win') { ✓ }
+          @else if (gameState().guessResult === 'lose') { ✗ }
+          @else { = }
+        </div>
+      </div>
+
+      <!-- Next card (revealed) -->
+      <div class="card-slot" *ngIf="gameState().phase === HiLoPhase.REVEALED && gameState().nextCard as card">
+        <div class="card-wrap"
+          [class.card-win]="gameState().guessResult === 'win'"
+          [class.card-lose]="gameState().guessResult === 'lose'"
+          [class.card-tie]="gameState().guessResult === 'tie'">
+          <div class="hl-card" [class.red]="getCardColor(card.suit) === 'red'">
+            <div class="card-corner tl">
+              <span class="c-rank">{{ card.rank }}</span>
+              <span class="c-suit">{{ card.suit }}</span>
+            </div>
+            <div class="c-center">{{ card.suit }}</div>
+            <div class="card-corner br">
+              <span class="c-rank">{{ card.rank }}</span>
+              <span class="c-suit">{{ card.suit }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-label">Carte suivante</div>
+      </div>
+
+    </div>
+
+    <!-- ── PLAYING actions ────────────────────────────────────────────── -->
+    <div class="actions" *ngIf="gameState().phase === HiLoPhase.PLAYING">
+      <button
+        class="dir-btn lower"
+        [disabled]="!canGuessLower()"
+        (click)="guess('lower')">
+        ▼ Plus bas
+        <span class="mult-badge" *ngIf="canGuessLower()">{{ lowerMultiplier() }}×</span>
+        <span class="mult-badge impossible" *ngIf="!canGuessLower()">—</span>
+      </button>
+
+      <button
+        class="cashout-btn"
+        *ngIf="gameState().streak > 0"
+        (click)="cashOut()">
+        💰 Cashout<br><strong>${{ pendingCashout() }}</strong>
+      </button>
+
+      <button
+        class="dir-btn higher"
+        [disabled]="!canGuessHigher()"
+        (click)="guess('higher')">
+        ▲ Plus haut
+        <span class="mult-badge" *ngIf="canGuessHigher()">{{ higherMultiplier() }}×</span>
+        <span class="mult-badge impossible" *ngIf="!canGuessHigher()">—</span>
+      </button>
+    </div>
+
+    <!-- ── REVEALED actions ───────────────────────────────────────────── -->
+    <div class="actions" *ngIf="gameState().phase === HiLoPhase.REVEALED">
+      @if (gameState().guessResult === 'lose') {
+        <button class="action-btn new-round" (click)="newRound()">Nouvelle partie</button>
+      } @else {
+        <button class="action-btn continue" (click)="continueStreak()">
+          Continuer le streak
+        </button>
+        <button class="cashout-btn" (click)="cashOut()">
+          💰 Cashout<br><strong>${{ pendingCashout() }}</strong>
+        </button>
+      }
+    </div>
+
+  </div>
+
+  <!-- ── History ────────────────────────────────────────────────────────── -->
+  <div class="hl-history" *ngIf="gameState().history.length > 0">
+    <div class="history-title">Historique</div>
+    <div class="history-list">
+      <div *ngFor="let entry of gameState().history" class="history-entry">
+        <span class="h-time">{{ entry.timestamp | date: 'HH:mm' }}</span>
+        <span class="h-info">Mise ${{ entry.bet }}</span>
+        <span class="h-info">Streak ×{{ entry.streak }}</span>
+        <span class="h-info" *ngIf="entry.cashedOut">{{ entry.multiplier }}×</span>
+        <span [class.h-win]="entry.profit > 0" [class.h-loss]="entry.profit < 0" [class.h-push]="entry.profit === 0">
+          {{ entry.profit >= 0 ? '+' : '' }}${{ entry.profit }}
+        </span>
+        <span class="h-bal">→ ${{ entry.balance }}</span>
+      </div>
+    </div>
+  </div>
+
+</div>

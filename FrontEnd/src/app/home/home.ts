@@ -61,6 +61,13 @@ export class Home implements OnInit {
       desc: 'Encaissez avant le crash !',
       accent: '#e67e22',
     },
+    {
+      name: 'Hi-Lo',
+      emoji: '🎲',
+      path: '/hilo',
+      desc: 'Plus haut ou plus bas ?',
+      accent: '#9b59b6',
+    },
   ];
 
   constructor(public highScoreService: HighScoreService) {}

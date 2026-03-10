@@ -9,6 +9,7 @@ import { Slots } from './slots/slots';
 import { Mines } from './mines/mines';
 import { Plinko } from './plinko/plinko';
 import { Crash } from './crash/crash';
+import { HiLo } from './hilo/hilo';
 import { Leaderboard } from './leaderboard/leaderboard';
 import { authGuard } from './guards/auth.guard';
 
@@ -24,6 +25,7 @@ export const routes: Routes = [
   { path: 'mines', component: Mines, canActivate: [authGuard] },
   { path: 'plinko', component: Plinko, canActivate: [authGuard] },
   { path: 'crash', component: Crash, canActivate: [authGuard] },
+  { path: 'hilo', component: HiLo, canActivate: [authGuard] },
   { path: 'leaderboard', component: Leaderboard, canActivate: [authGuard] },
   { path: '**', redirectTo: '/home' }
 ];
