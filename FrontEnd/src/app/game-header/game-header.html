@@ -1,0 +1,37 @@
+<div class="stats-panel">
+  <div class="stat">
+    <span class="stat-label">Balance</span>
+    <span class="stat-value balance">${{ balance }}</span>
+  </div>
+  <div class="stats-title">{{ title }}</div>
+  <div class="stats-right">
+    <div class="stat">
+      <span class="stat-label">Parties</span>
+      <span class="stat-value">{{ gamesPlayed }}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">{{ winsLabel }}</span>
+      <span class="stat-value wins">{{ gamesWon }}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">{{ lossesLabel }}</span>
+      <span class="stat-value losses">{{ gamesLost }}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Profit/Perte</span>
+      <span class="stat-value" [class.profit]="profitLoss > 0" [class.loss]="profitLoss < 0">
+        {{ profitLoss >= 0 ? '+' : '' }}${{ profitLoss }}
+      </span>
+    </div>
+  </div>
+</div>
+
+@if (message !== null) {
+  <div
+    class="message-display"
+    [class.win-message]="messageWin"
+    [class.lose-message]="messageLose"
+  >
+    {{ message }}
+  </div>
+}

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { GameHeader } from '../game-header/game-header';
 
 const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '🔔', '💎', '7️⃣'];
 const SYMBOL_WEIGHTS = [30, 25, 20, 15, 6, 3, 1];
@@ -48,7 +49,7 @@ function randomReel(): string[] {
 @Component({
   selector: 'app-slots',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, GameHeader],
   templateUrl: './slots.html',
   styleUrls: ['./slots.css'],
 })

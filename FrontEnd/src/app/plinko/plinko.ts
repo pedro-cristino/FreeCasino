@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { GameHeader } from '../game-header/game-header';
 
 const ROWS = 16;
 const SLOTS = ROWS + 1; // 17 slots
@@ -50,7 +51,7 @@ export interface PlinkoHistory {
 @Component({
   selector: 'app-plinko',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, GameHeader],
   templateUrl: './plinko.html',
   styleUrls: ['./plinko.css'],
 })

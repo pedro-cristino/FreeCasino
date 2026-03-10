@@ -1,43 +1,16 @@
-<div class="slots-container">
-  <!-- Stats -->
-  <div class="stats-panel">
-    <div class="stat">
-      <span class="stat-label">Balance</span>
-      <span class="stat-value balance">${{ balance() }}</span>
-    </div>
-    <div class="stats-title">🎰 SLOTS</div>
-    <div class="stats-right">
-      <div class="stat">
-        <span class="stat-label">Parties</span>
-        <span class="stat-value">{{ gamesPlayed() }}</span>
-      </div>
-      <div class="stat">
-        <span class="stat-label">Victoires</span>
-        <span class="stat-value wins">{{ gamesWon() }}</span>
-      </div>
-      <div class="stat">
-        <span class="stat-label">Défaites</span>
-        <span class="stat-value losses">{{ gamesLost() }}</span>
-      </div>
-      <div class="stat">
-        <span class="stat-label">Profit</span>
-        <span
-          class="stat-value"
-          [class.profit]="profitLoss() > 0"
-          [class.loss]="profitLoss() < 0"
-        >{{ profitLoss() >= 0 ? '+' : '' }}${{ profitLoss() }}</span>
-      </div>
-    </div>
-  </div>
+<div class="game-wrapper">
 
-  <!-- Message -->
-  <div
-    class="message-display"
-    [class.win-message]="phase() === SlotsPhase.RESULT && history().length > 0 && history()[0].profit > 0"
-    [class.lose-message]="phase() === SlotsPhase.RESULT && history().length > 0 && history()[0].profit <= 0"
-  >
-    {{ message() }}
-  </div>
+  <app-game-header
+    title="🎰 SLOTS"
+    [balance]="balance()"
+    [gamesPlayed]="gamesPlayed()"
+    [gamesWon]="gamesWon()"
+    [gamesLost]="gamesLost()"
+    [profitLoss]="profitLoss()"
+    [message]="message()"
+    [messageWin]="phase() === SlotsPhase.RESULT && history().length > 0 && history()[0].profit > 0"
+    [messageLose]="phase() === SlotsPhase.RESULT && history().length > 0 && history()[0].profit <= 0"
+  />
 
   <!-- Slot Machine Body -->
   <div class="machine-wrapper">

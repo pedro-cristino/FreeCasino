@@ -5,6 +5,7 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { BalanceService } from '../services/balance.service';
+import { GameHeader } from '../game-header/game-header';
 
 // Enums
 export enum GamePhase {
@@ -95,7 +96,7 @@ export interface GameState {
 @Component({
   selector: 'app-blackjack',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, GameHeader],
   templateUrl: './blackjack.html',
   styleUrls: ['./blackjack.css']
 })

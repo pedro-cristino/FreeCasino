@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { GameHeader } from '../game-header/game-header';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
@@ -44,7 +45,7 @@ interface PathPoint {
 @Component({
   selector: 'app-crash',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, GameHeader],
   templateUrl: './crash.html',
   styleUrls: ['./crash.css'],
 })

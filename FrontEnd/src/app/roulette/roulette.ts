@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { GameHeader } from '../game-header/game-header';
 
 export enum RoulettePhase {
   BETTING = 'BETTING',
@@ -57,7 +58,7 @@ interface BetZone {
 @Component({
   selector: 'app-roulette',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, GameHeader],
   templateUrl: './roulette.html',
   styleUrls: ['./roulette.css'],
 })

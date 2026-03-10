@@ -1,36 +1,14 @@
-<div class="bj-wrapper">
+<div class="game-wrapper">
 
-  <!-- Stats Bar -->
-  <div class="bj-stats">
-    <div class="stat-item">
-      <span class="stat-label">Balance</span>
-      <span class="stat-value balance">${{ gameState().playerBalance }}</span>
-    </div>
-    <div class="bj-title">♠ BLACKJACK ♠</div>
-    <div class="stat-row">
-      <div class="stat-item">
-        <span class="stat-label">Parties</span>
-        <span class="stat-value">{{ gamesPlayed() }}</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Victoires</span>
-        <span class="stat-value wins">{{ gamesWon() }}</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Défaites</span>
-        <span class="stat-value losses">{{ gamesLost() }}</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">P/L</span>
-        <span class="stat-value" [class.profit]="profitLoss() > 0" [class.loss]="profitLoss() < 0">
-          {{ profitLoss() >= 0 ? '+' : '' }}${{ profitLoss() }}
-        </span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Message Banner -->
-  <div class="bj-message">{{ gameState().message }}</div>
+  <app-game-header
+    title="♠ BLACKJACK ♠"
+    [balance]="gameState().playerBalance"
+    [gamesPlayed]="gamesPlayed()"
+    [gamesWon]="gamesWon()"
+    [gamesLost]="gamesLost()"
+    [profitLoss]="profitLoss()"
+    [message]="gameState().message"
+  />
 
   <!-- SEAT SELECTION -->
   <div class="bj-panel seat-panel" *ngIf="gameState().phase === GamePhase.SEAT_SELECTION">

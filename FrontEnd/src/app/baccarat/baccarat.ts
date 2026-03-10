@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { GameHeader } from '../game-header/game-header';
 
 export enum BaccaratPhase {
   BETTING = 'BETTING',
@@ -61,7 +62,7 @@ export interface BaccaratState {
 @Component({
   selector: 'app-baccarat',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, GameHeader],
   templateUrl: './baccarat.html',
   styleUrls: ['./baccarat.css']
 })

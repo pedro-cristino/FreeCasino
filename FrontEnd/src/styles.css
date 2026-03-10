@@ -12,3 +12,15 @@ body {
   min-height: 100vh;
   color: #fff;
 }
+
+/* ── Shared game page wrapper ────────────────────────────────────────────── */
+
+.game-wrapper {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 20%, #1e5534 0%, #0e2a1a 55%, #060f09 100%);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
+}

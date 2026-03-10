@@ -1,23 +1,14 @@
-<div class="roulette-container">
-  <!-- Stats -->
-  <div class="stats-panel">
-    <div class="stat"><span class="stat-label">Balance</span><span class="stat-value balance">${{ gameState().balance }}</span></div>
-    <div class="stats-title">🎡 ROULETTE</div>
-    <div class="stats-right">
-      <div class="stat"><span class="stat-label">Parties</span><span class="stat-value">{{ gamesPlayed() }}</span></div>
-      <div class="stat"><span class="stat-label">Victoires</span><span class="stat-value wins">{{ gamesWon() }}</span></div>
-      <div class="stat"><span class="stat-label">Défaites</span><span class="stat-value losses">{{ gamesLost() }}</span></div>
-      <div class="stat">
-        <span class="stat-label">Profit/Perte</span>
-        <span class="stat-value" [class.profit]="profitLoss() > 0" [class.loss]="profitLoss() < 0">
-          {{ profitLoss() >= 0 ? '+' : '' }}${{ profitLoss() }}
-        </span>
-      </div>
-    </div>
-  </div>
+<div class="game-wrapper">
 
-  <!-- Message -->
-  <div class="message-display">{{ gameState().message }}</div>
+  <app-game-header
+    title="🎡 ROULETTE"
+    [balance]="gameState().balance"
+    [gamesPlayed]="gamesPlayed()"
+    [gamesWon]="gamesWon()"
+    [gamesLost]="gamesLost()"
+    [profitLoss]="profitLoss()"
+    [message]="gameState().message"
+  />
 
   <!-- Chip selector -->
   <div class="chip-selector" *ngIf="gameState().phase === RoulettePhase.BETTING">

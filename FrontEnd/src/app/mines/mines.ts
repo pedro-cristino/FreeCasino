@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
+import { GameHeader } from '../game-header/game-header';
 
 const GRID = 5;
 const N = GRID * GRID; // 25 tiles
@@ -45,7 +46,7 @@ function calcMult(revealed: number, mines: number): number {
 @Component({
   selector: 'app-mines',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, GameHeader],
   templateUrl: './mines.html',
   styleUrls: ['./mines.css'],
 })
