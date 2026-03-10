@@ -27,3 +27,20 @@ Un casino en ligne gratuit avec 8 jeux, un système de progression par niveaux, 
 - **Statistiques** — taux de victoire, profit/perte, plus gros gain, jeu favori
 - **Système de run** — suis tes performances sur une session depuis un solde de départ fixe, recommence quand tu veux
 - **Interface responsive** — jouable sur mobile et desktop
+
+---
+
+## Aperçu
+
+<table>
+  <tr>
+    <td><img src=".github/blackjack.png" alt="Blackjack"/></td>
+    <td><img src=".github/mines.png" alt="Mines"/></td>
+    <td><img src=".github/plinko.png" alt="Plinko"/></td>
+  </tr>
+  <tr>
+    <td><img src=".github/crash.png" alt="Crash"/></td>
+    <td><img src=".github/succés.png" alt="Succès"/></td>
+    <td><img src=".github/scoreboard.png" alt="Classement"/></td>
+  </tr>
+</table>
