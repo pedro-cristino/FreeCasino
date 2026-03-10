@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { BalanceService } from '../services/balance.service';
 import { HighScoreService } from '../services/highscore.service';
+import { StatsService } from '../services/stats.service';
 
 @Component({
   selector: 'app-navigation',
@@ -19,7 +20,8 @@ export class Navigation implements OnInit {
   constructor(
     public authService: AuthService,
     public balanceService: BalanceService,
-    public highScoreService: HighScoreService
+    public highScoreService: HighScoreService,
+    private statsService: StatsService,
   ) {}
 
   ngOnInit(): void {
@@ -31,13 +33,16 @@ export class Navigation implements OnInit {
 
   restartRun(): void {
     this.balanceService.restart().subscribe();
+    this.statsService.clearRunGames();
     this.showRestartConfirm = false;
   }
 
   saveScore(): void {
-    this.highScoreService.saveScore().subscribe(r => {
+    const gameType = this.statsService.getRunType();
+    this.highScoreService.saveScore(gameType).subscribe(r => {
       this.balanceService.balance.set(0);
       this.balanceService.balance.set(r.balance);
+      this.statsService.clearRunGames();
       this.showSaveConfirm = false;
     });
   }

@@ -6,6 +6,7 @@ import { filter } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { BalanceService } from '../services/balance.service';
 import { StatsService } from '../services/stats.service';
+import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
 
 // Enums
@@ -152,11 +153,13 @@ export class Blackjack implements OnInit {
   lastSeatsCount = 1;
 
   isResolving = false;
+  private gameBoost = 0;
 
   constructor(
     public authService: AuthService,
     private balanceService: BalanceService,
     private statsService: StatsService,
+    private achievementsService: AchievementsService,
   ) {
     toObservable(balanceService.balance).pipe(
       filter(b => b > 0),
@@ -168,6 +171,9 @@ export class Blackjack implements OnInit {
 
   ngOnInit(): void {
     this.balanceService.load();
+    this.achievementsService.getBoosts().subscribe(b => {
+      this.gameBoost = b['blackjack'] ?? 0;
+    });
   }
 
   logout(): void {
@@ -607,11 +613,11 @@ export class Blackjack implements OnInit {
       const mainWasBlackjack = seat.mainHand.status === HandStatus.BLACKJACK;
       const hasSplit = !!seat.splitHand;
 
-      totalWinnings += this.resolveHand(seat.mainHand, dealerValue, dealerBust);
+      totalWinnings += this.resolveHand(seat.mainHand, dealerValue, dealerBust, this.gameBoost);
       handStats.push({ hand: seat.mainHand, wasBlackjack: mainWasBlackjack, wasSplit: hasSplit });
 
       if (seat.splitHand) {
-        totalWinnings += this.resolveHand(seat.splitHand, dealerValue, dealerBust);
+        totalWinnings += this.resolveHand(seat.splitHand, dealerValue, dealerBust, this.gameBoost);
         handStats.push({ hand: seat.splitHand, wasBlackjack: false, wasSplit: true });
       }
     }
@@ -656,13 +662,14 @@ export class Blackjack implements OnInit {
     }
   }
 
-  private resolveHand(hand: Hand, dealerValue: number, dealerBust: boolean): number {
+  private resolveHand(hand: Hand, dealerValue: number, dealerBust: boolean, boostPct = 0): number {
     if (hand.status === HandStatus.BUST) {
       hand.status = HandStatus.LOSS;
       return 0;
     }
 
     const handValue = hand.value!;
+    const m = 1 + boostPct / 100;
 
     if (hand.status === HandStatus.BLACKJACK) {
       if (dealerValue === 21 && this.gameState().dealerHand.cards.length === 2) {
@@ -670,13 +677,15 @@ export class Blackjack implements OnInit {
         return hand.bet;
       } else {
         hand.status = HandStatus.WIN;
-        return Math.round(hand.bet * 2.5 * 100) / 100;
+        // mise récupérée + profit BJ (×1.5) boosté
+        return Math.round((hand.bet + hand.bet * 1.5 * m) * 100) / 100;
       }
     }
 
     if (dealerBust || handValue > dealerValue) {
       hand.status = HandStatus.WIN;
-      return hand.bet * 2;
+      // mise récupérée + profit (×1) boosté
+      return Math.round((hand.bet + hand.bet * m) * 100) / 100;
     } else if (handValue === dealerValue) {
       hand.status = HandStatus.PUSH;
       return hand.bet;

@@ -1,3 +1,4 @@
+using API.Achievements;
 using API.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -89,7 +90,89 @@ public class StatsController(CasinoDbContext db) : ControllerBase
             pct, allIn, dto.CurrentBalance, dto.Game,
             bj, split, cm, hs);
 
-        return Ok(new { success = true });
+        // ── Achievement check ──────────────────────────────────────────────
+        var stats = await db.UserStats.AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Username == username);
+
+        List<object> newAchievements = [];
+
+        if (stats is not null)
+        {
+            var winsForGame = dto.Game switch
+            {
+                "blackjack" => stats.BlackjackWins,
+                "baccarat"  => stats.BaccaratWins,
+                "roulette"  => stats.RouletteWins,
+                "slots"     => stats.SlotsWins,
+                "mines"     => stats.MinesWins,
+                "plinko"    => stats.PlinkoWins,
+                "crash"     => stats.CrashWins,
+                "hilo"      => stats.HiloWins,
+                _           => 0,
+            };
+
+            var eligible = AchievementRegistry.All
+                .Where(a => a.Game == dto.Game && a.WinsRequired <= winsForGame)
+                .Select(a => a.Key)
+                .ToHashSet();
+
+            if (eligible.Count > 0)
+            {
+                var alreadyUnlocked = await db.UserAchievements
+                    .Where(a => a.Username == username && eligible.Contains(a.AchievementKey))
+                    .Select(a => a.AchievementKey)
+                    .ToListAsync();
+
+                var toUnlock = eligible.Except(alreadyUnlocked).ToList();
+
+                foreach (var key in toUnlock)
+                {
+                    db.UserAchievements.Add(new UserAchievement
+                    {
+                        Username       = username,
+                        AchievementKey = key,
+                        UnlockedAt     = DateTime.UtcNow.ToString("O"),
+                    });
+
+                    if (AchievementRegistry.ByKey.TryGetValue(key, out var def))
+                        newAchievements.Add(new
+                        {
+                            def.Key,
+                            def.Name,
+                            def.Description,
+                            def.BoostPercent,
+                        });
+                }
+
+                if (toUnlock.Count > 0)
+                    await db.SaveChangesAsync();
+            }
+        }
+
+        // ── XP award ──────────────────────────────────────────────────────────
+        var userBefore = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username);
+        var previousLevel = userBefore?.Level ?? 1;
+
+        var xpGained = Math.Round(dto.AmountBet * 0.1, 1);
+        await db.Database.ExecuteSqlRawAsync("""
+            UPDATE Users SET
+                Xp    = Xp + {1},
+                Level = COALESCE(
+                    (SELECT MAX(Level) FROM LevelThresholds WHERE RequiredXp <= Xp + {1}),
+                    1
+                )
+            WHERE Username = {0}
+            """, username, xpGained);
+
+        object? levelUp = null;
+        var userAfter = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username);
+        if (userAfter != null && userAfter.Level > previousLevel)
+        {
+            var threshold = await db.LevelThresholds.FindAsync(userAfter.Level);
+            levelUp = new { level = userAfter.Level, name = threshold?.Name ?? "" };
+        }
+
+        return Ok(new { newAchievements, levelUp, xpGained });
     }
 
     [HttpDelete("reset")]

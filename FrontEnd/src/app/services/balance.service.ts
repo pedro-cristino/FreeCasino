@@ -1,10 +1,11 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class BalanceService {
-  private readonly apiUrl = 'https://localhost:7118/api/user';
+  private readonly apiUrl = `${environment.apiUrl}/api/user`;
 
   balance = signal<number>(0);
 

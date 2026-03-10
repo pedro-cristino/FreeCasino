@@ -4,6 +4,7 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
 import { StatsService } from '../services/stats.service';
+import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
 
 export enum RoulettePhase {
@@ -188,10 +189,13 @@ export class Roulette implements OnInit {
   gamesLost = computed(() => this.gameState().history.filter(h => h.profit < 0).length);
   profitLoss = computed(() => Math.round(this.gameState().history.reduce((sum, h) => sum + h.profit, 0) * 100) / 100);
 
-  constructor(private balanceService: BalanceService, private statsService: StatsService) {
+  private gameBoost = 0;
+
+  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
     toObservable(balanceService.balance)
       .pipe(filter(b => b > 0), takeUntilDestroyed())
       .subscribe(b => this.gameState.update(s => ({ ...s, balance: b })));
+    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['roulette'] ?? 0; });
   }
 
   ngOnInit(): void {}
@@ -422,6 +426,10 @@ export class Roulette implements OnInit {
     let winnings = 0;
     for (const [key, amount] of Object.entries(state.bets)) {
       if (this.isWinningBet(key, result)) winnings += amount * this.getPayout(key);
+    }
+    const rawProfit = winnings - totalBet;
+    if (rawProfit > 0 && this.gameBoost > 0) {
+      winnings = Math.round((totalBet + rawProfit * (1 + this.gameBoost / 100)) * 100) / 100;
     }
     const profit = Math.round((winnings - totalBet) * 100) / 100;
     const newBalance = Math.round((state.balance + winnings) * 100) / 100;

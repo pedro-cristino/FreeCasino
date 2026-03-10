@@ -2,16 +2,18 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface LeaderboardEntry {
   username: string;
   score: number;
+  gameType: string;
   savedAt: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class HighScoreService {
-  private readonly apiUrl = 'https://localhost:7118/api/highscore';
+  private readonly apiUrl = `${environment.apiUrl}/api/highscore`;
 
   myBest = signal<number>(0);
   myRank = signal<number | null>(null);
@@ -25,15 +27,16 @@ export class HighScoreService {
     });
   }
 
-  getLeaderboard(): Observable<LeaderboardEntry[]> {
-    return this.http.get<LeaderboardEntry[]>(this.apiUrl);
+  getLeaderboard(game?: string): Observable<LeaderboardEntry[]> {
+    const url = game ? `${this.apiUrl}?game=${encodeURIComponent(game)}` : this.apiUrl;
+    return this.http.get<LeaderboardEntry[]>(url);
   }
 
-  saveScore(): Observable<{ score: number; balance: number }> {
-    return this.http.post<{ score: number; balance: number }>(this.apiUrl, {}).pipe(
+  saveScore(gameType: string): Observable<{ score: number; balance: number }> {
+    return this.http.post<{ score: number; balance: number }>(this.apiUrl, { gameType }).pipe(
       tap(r => {
         if (r.score > this.myBest()) this.myBest.set(r.score);
-      })
+      }),
     );
   }
 }

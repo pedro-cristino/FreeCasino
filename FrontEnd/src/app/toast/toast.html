@@ -1,0 +1,15 @@
+<div class="toast-container">
+  @for (t of toastService.toasts(); track t.id) {
+    <div class="toast" [class.levelup]="t.type === 'levelup'" (click)="toastService.dismiss(t.id)">
+      <div class="toast-icon">{{ t.type === 'levelup' ? '⬆️' : '🏅' }}</div>
+      <div class="toast-body">
+        <div class="toast-title">{{ t.type === 'levelup' ? 'Niveau supérieur !' : 'Succès débloqué !' }}</div>
+        <div class="toast-name">{{ t.name }}</div>
+        <div class="toast-desc">{{ t.description }}</div>
+        @if (t.type === 'achievement') {
+          <div class="toast-boost">+{{ t.boostPercent }}% de gains</div>
+        }
+      </div>
+    </div>
+  }
+</div>

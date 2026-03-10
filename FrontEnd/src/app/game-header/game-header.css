@@ -54,6 +54,61 @@
 .stat-value.profit  { color: #2ecc71; }
 .stat-value.loss    { color: #e74c3c; }
 
+/* ── Level block ─────────────────────────────────────────────────────────── */
+
+.level-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.level-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.level-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #d4af37;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 6px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+.level-name {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.xp-bar-wrap {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.xp-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #d4af37, #f0d060);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+  min-width: 2px;
+}
+
+.xp-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: right;
+}
+
 /* ── Message Banner ──────────────────────────────────────────────────────── */
 
 .message-display {

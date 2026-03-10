@@ -12,6 +12,7 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
 import { StatsService } from '../services/stats.service';
+import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
 
 const ROWS = 16;
@@ -78,10 +79,13 @@ export class Plinko implements AfterViewInit, OnDestroy {
     () => Math.round(this.history().reduce((s, h) => s + h.profit, 0) * 100) / 100
   );
 
-  constructor(private balanceService: BalanceService, private statsService: StatsService) {
+  private gameBoost = 0;
+
+  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
     toObservable(balanceService.balance)
       .pipe(filter(b => b > 0), takeUntilDestroyed())
       .subscribe(b => this.balance.set(b));
+    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['plinko'] ?? 0; });
   }
 
   ngAfterViewInit(): void {
@@ -161,7 +165,8 @@ export class Plinko implements AfterViewInit, OnDestroy {
 
   private settleBall(ball: Ball): void {
     const mult = MULTIPLIERS[ball.finalSlot];
-    const winAmount = Math.round(ball.bet * mult * 100) / 100;
+    const boostedMult = this.gameBoost > 0 ? mult * (1 + this.gameBoost / 100) : mult;
+    const winAmount = Math.round(ball.bet * boostedMult * 100) / 100;
     const profit = Math.round((winAmount - ball.bet) * 100) / 100;
     const newBalance = Math.round((this.balance() + winAmount) * 100) / 100;
 

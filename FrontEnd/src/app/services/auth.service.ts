@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 export interface LoginRequest {
   username: string;
@@ -24,7 +25,7 @@ export interface RegisterResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'https://localhost:7118/api/auth';
+  private apiUrl = `${environment.apiUrl}/api/auth`;
   private tokenKey = 'blackjack_auth_token';
   private usernameKey = 'blackjack_username';
 

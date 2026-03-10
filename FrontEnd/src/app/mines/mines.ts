@@ -4,6 +4,7 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
 import { StatsService } from '../services/stats.service';
+import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
 
 const GRID = 5;
@@ -96,10 +97,13 @@ export class Mines {
   gamesLost = computed(() => this.history().filter(h => !h.won).length);
   profitLoss = computed(() => Math.round(this.history().reduce((s, h) => s + h.profit, 0) * 100) / 100);
 
-  constructor(private balanceService: BalanceService, private statsService: StatsService) {
+  private gameBoost = 0;
+
+  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
     toObservable(balanceService.balance)
       .pipe(filter(b => b > 0), takeUntilDestroyed())
       .subscribe(b => this.balance.set(b));
+    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['mines'] ?? 0; });
   }
 
   // ── Bet controls ────────────────────────────────────────────────────────────
@@ -210,7 +214,11 @@ export class Mines {
     if (this.phase() !== MinesPhase.PLAYING || this.revealedCount() === 0) return;
 
     const mult = this.multiplier();
-    const winAmount = Math.round(this.activeBet() * mult * 100) / 100;
+    let winAmount = Math.round(this.activeBet() * mult * 100) / 100;
+    const rawProfit = winAmount - this.lastBet;
+    if (rawProfit > 0 && this.gameBoost > 0) {
+      winAmount = Math.round((this.lastBet + rawProfit * (1 + this.gameBoost / 100)) * 100) / 100;
+    }
     const profit = Math.round((winAmount - this.lastBet) * 100) / 100;
     const newBalance = Math.round((this.balance() + winAmount) * 100) / 100;
 

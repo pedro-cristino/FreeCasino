@@ -1,12 +1,15 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { LevelService } from '../services/level.service';
 
 @Component({
   selector: 'app-game-header',
   standalone: true,
+  imports: [CommonModule],
   templateUrl: './game-header.html',
   styleUrl: './game-header.css',
 })
-export class GameHeader {
+export class GameHeader implements OnInit {
   @Input() title = '';
   @Input() balance = 0;
   @Input() gamesPlayed = 0;
@@ -19,4 +22,10 @@ export class GameHeader {
   @Input() message: string | null = null;
   @Input() messageWin = false;
   @Input() messageLose = false;
+
+  constructor(readonly levelService: LevelService) {}
+
+  ngOnInit(): void {
+    this.levelService.refresh();
+  }
 }

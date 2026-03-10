@@ -12,6 +12,7 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
 import { StatsService } from '../services/stats.service';
+import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
 
 const CANVAS_W = 600;
@@ -97,10 +98,13 @@ export class Crash implements AfterViewInit, OnDestroy {
       this.phase() !== CrashPhase.FLYING
   );
 
-  constructor(private balanceService: BalanceService, private statsService: StatsService) {
+  private gameBoost = 0;
+
+  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
     toObservable(balanceService.balance)
       .pipe(filter(b => b > 0), takeUntilDestroyed())
       .subscribe(b => this.balance.set(b));
+    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['crash'] ?? 0; });
   }
 
   ngAfterViewInit(): void {
@@ -161,7 +165,11 @@ export class Crash implements AfterViewInit, OnDestroy {
     this.cashedOut.set(true);
     this.cashOutMult.set(mult);
 
-    const winAmount = Math.round(this.activeBet() * mult * 100) / 100;
+    let winAmount = Math.round(this.activeBet() * mult * 100) / 100;
+    const rawProfit = winAmount - this.activeBet();
+    if (rawProfit > 0 && this.gameBoost > 0) {
+      winAmount = Math.round((this.activeBet() + rawProfit * (1 + this.gameBoost / 100)) * 100) / 100;
+    }
     const newBalance = Math.round((this.balance() + winAmount) * 100) / 100;
     this.balance.set(newBalance);
     this.balanceService.save(newBalance);

@@ -13,9 +13,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  const clonedReq = token
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : req;
+  const clonedReq = req.clone({
+    setHeaders: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      'ngrok-skip-browser-warning': 'true',
+    },
+  });
 
   return next(clonedReq).pipe(
     catchError((err: HttpErrorResponse) => {

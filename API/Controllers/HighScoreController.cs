@@ -15,14 +15,19 @@ public class HighScoreController(CasinoDbContext db) : ControllerBase
         return UserStore.GetUsername(auth["Bearer ".Length..]);
     }
 
-    // GET /api/highscore — global leaderboard (top 20)
+    // GET /api/highscore?game=blackjack — global leaderboard (top 20, optional game filter)
     [HttpGet]
-    public async Task<IActionResult> GetLeaderboard()
+    public async Task<IActionResult> GetLeaderboard([FromQuery] string? game)
     {
-        var scores = await db.HighScores
-            .OrderByDescending(s => s.Score)
+        var query = db.HighScores.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(game))
+            query = query.Where(s => s.GameType == game);
+
+        var scores = await query
+            .OrderByDescending(s => (double)s.Score)
             .Take(20)
-            .Select(s => new { s.Username, s.Score, s.SavedAt })
+            .Select(s => new { s.Username, s.Score, s.GameType, s.SavedAt })
             .ToListAsync();
 
         return Ok(scores);
@@ -51,9 +56,33 @@ public class HighScoreController(CasinoDbContext db) : ControllerBase
         return Ok(new { score = best.Score, rank });
     }
 
+    // GET /api/highscore/levels — top 10 by level then XP
+    [HttpGet("levels")]
+    public async Task<IActionResult> GetLevelLeaderboard()
+    {
+        var top = await db.Users
+            .OrderByDescending(u => u.Level)
+            .ThenByDescending(u => u.Xp)
+            .Take(10)
+            .Select(u => new { u.Username, u.Level, u.Xp })
+            .ToListAsync();
+
+        var thresholds = await db.LevelThresholds.ToDictionaryAsync(l => l.Level, l => l.Name);
+
+        var result = top.Select(u => new
+        {
+            u.Username,
+            u.Level,
+            LevelName = thresholds.TryGetValue(u.Level, out var n) ? n : "Touriste",
+            u.Xp,
+        });
+
+        return Ok(result);
+    }
+
     // POST /api/highscore — save current balance as score, reset to 1000
     [HttpPost]
-    public async Task<IActionResult> SaveScore()
+    public async Task<IActionResult> SaveScore([FromBody] SaveScoreRequest? body)
     {
         var username = ResolveUsername();
         if (username is null) return Unauthorized();
@@ -62,11 +91,14 @@ public class HighScoreController(CasinoDbContext db) : ControllerBase
         if (user is null) return NotFound();
         if (user.Balance <= 1000) return BadRequest(new { message = "La balance doit être supérieure à $1 000 pour sauvegarder." });
 
+        var gameType = body?.GameType ?? "multiple";
         var savedScore = user.Balance;
-        db.HighScores.Add(new HighScore { Username = username, Score = savedScore });
+        db.HighScores.Add(new HighScore { Username = username, Score = savedScore, GameType = gameType });
         user.Balance = 1000;
         await db.SaveChangesAsync();
 
         return Ok(new { score = savedScore, balance = 1000 });
     }
 }
+
+public record SaveScoreRequest(string GameType);

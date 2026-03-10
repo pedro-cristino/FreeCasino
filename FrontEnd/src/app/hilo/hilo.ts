@@ -4,6 +4,7 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
 import { StatsService } from '../services/stats.service';
+import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
 
 export enum HiLoPhase {
@@ -103,10 +104,13 @@ export class HiLo implements OnInit {
     return card ? this.calcMultiplier(card.value, 'lower') : 0;
   });
 
-  constructor(private balanceService: BalanceService, private statsService: StatsService) {
+  private gameBoost = 0;
+
+  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
     toObservable(balanceService.balance)
       .pipe(filter(b => b > 0), takeUntilDestroyed())
       .subscribe(b => this.gameState.update(s => ({ ...s, balance: b })));
+    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['hilo'] ?? 0; });
   }
 
   ngOnInit(): void {
@@ -251,7 +255,11 @@ export class HiLo implements OnInit {
       (s.phase === HiLoPhase.PLAYING && s.streak > 0);
     if (!canCashout) return;
 
-    const winnings = Math.round(s.bet * s.multiplier * 100) / 100;
+    let winnings = Math.round(s.bet * s.multiplier * 100) / 100;
+    const rawProfit = winnings - s.bet;
+    if (rawProfit > 0 && this.gameBoost > 0) {
+      winnings = Math.round((s.bet + rawProfit * (1 + this.gameBoost / 100)) * 100) / 100;
+    }
     const newBalance = s.balance + winnings;
     const entry = this.buildHistory({ ...s, balance: newBalance }, true);
 

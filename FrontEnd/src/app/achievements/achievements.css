@@ -3,7 +3,7 @@
   background: radial-gradient(ellipse at 50% 20%, #1e5534 0%, #0e2a1a 55%, #060f09 100%);
   max-width: 1100px;
   margin: 0 auto;
-  padding: 32px 16px;
+  padding: 32px 16px 48px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #fff;
 }
@@ -12,7 +12,7 @@
 
 .page-header {
   text-align: center;
-  margin-bottom: 36px;
+  margin-bottom: 40px;
 }
 
 .page-title {
@@ -32,40 +32,164 @@
   text-transform: uppercase;
 }
 
-/* ── Grid ────────────────────────────────────────────────────────────────── */
+/* ── Game section ────────────────────────────────────────────────────────── */
 
-.achievements-grid {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 10px;
+.game-section {
+  margin-bottom: 36px;
 }
 
-/* ── Slot ────────────────────────────────────────────────────────────────── */
-
-.achievement-slot {
-  aspect-ratio: 1;
-  border-radius: 12px;
+.section-title {
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: default;
+  gap: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.section-emoji {
+  font-size: 1.1rem;
+}
+
+/* ── Tier grid (4 cards per game) ────────────────────────────────────────── */
+
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+/* ── Achievement card ────────────────────────────────────────────────────── */
+
+.achievement-card {
+  border-radius: 14px;
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
   transition: transform 0.15s;
 }
 
-.achievement-slot.locked {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.achievement-card.unlocked {
+  background: rgba(212, 175, 55, 0.07);
+  border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
-.achievement-icon {
-  font-size: 1.4rem;
-  color: rgba(255, 255, 255, 0.12);
+.achievement-card.unlocked:hover {
+  transform: translateY(-2px);
+}
+
+.achievement-card.locked {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Unlocked card content */
+
+.card-emoji {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.card-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #d4af37;
+  letter-spacing: 0.5px;
+}
+
+.card-desc {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.card-boost {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #2ecc71;
+  margin-top: 2px;
+}
+
+.card-boost.muted {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* Locked card content */
+
+.card-locked-icon {
+  font-size: 1.6rem;
   font-weight: 900;
-  user-select: none;
+  color: rgba(255, 255, 255, 0.1);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.card-locked-hint {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.3);
+  line-height: 1.4;
+}
+
+/* ── Tier badges ─────────────────────────────────────────────────────────── */
+
+.tier-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.tier-badge.tier-debutant {
+  background: rgba(52, 152, 219, 0.15);
+  color: #3498db;
+  border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.tier-badge.tier-intermediaire {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.tier-badge.tier-confirme {
+  background: rgba(212, 175, 55, 0.15);
+  color: #d4af37;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.tier-badge.tier-degen {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+/* ── Loading ─────────────────────────────────────────────────────────────── */
+
+.loading {
+  text-align: center;
+  padding: 80px 0;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 2px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 
-@media (max-width: 600px) {
-  .achievements-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+@media (max-width: 700px) {
+  .tier-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 400px) {
+  .tier-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
 }

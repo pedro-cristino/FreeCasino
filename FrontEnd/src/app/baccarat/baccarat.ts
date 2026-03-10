@@ -4,6 +4,7 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
 import { StatsService } from '../services/stats.service';
+import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
 
 export enum BaccaratPhase {
@@ -85,14 +86,16 @@ export class Baccarat implements OnInit {
   isResolving = false;
   betInputs = { player: 0, banker: 0, tie: 0 };
   lastBetInputs = { player: 0, banker: 0, tie: 0 };
+  private gameBoost = 0;
 
-  constructor(private balanceService: BalanceService, private statsService: StatsService) {
+  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
     toObservable(balanceService.balance).pipe(
       filter(b => b > 0),
       takeUntilDestroyed()
     ).subscribe(b => {
       this.gameState.update(s => ({ ...s, balance: b }));
     });
+    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['baccarat'] ?? 0; });
   }
 
   ngOnInit(): void {
@@ -286,6 +289,10 @@ export class Baccarat implements OnInit {
     }
 
     const totalBet = bets.player + bets.banker + bets.tie;
+    const rawProfit = winnings - totalBet;
+    if (rawProfit > 0 && this.gameBoost > 0) {
+      winnings = Math.round((totalBet + rawProfit * (1 + this.gameBoost / 100)) * 100) / 100;
+    }
     const profit = Math.round((winnings - totalBet) * 100) / 100;
     const newBalance = Math.round((balanceAfterBets + winnings) * 100) / 100;
 

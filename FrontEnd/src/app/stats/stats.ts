@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StatsService, UserStats } from '../services/stats.service';
+import { AchievementsService, GameBoosts } from '../services/achievements.service';
 
 @Component({
   selector: 'app-stats',
@@ -11,8 +12,26 @@ import { StatsService, UserStats } from '../services/stats.service';
 })
 export class Stats implements OnInit {
   stats = signal<UserStats | null>(null);
+  boosts = signal<GameBoosts>({});
   resetting = signal(false);
   showConfirm = signal(false);
+
+  readonly gameLabels: Record<string, { label: string; emoji: string }> = {
+    blackjack: { label: 'Blackjack', emoji: '🃏' },
+    baccarat:  { label: 'Baccarat',  emoji: '🎴' },
+    roulette:  { label: 'Roulette',  emoji: '🎡' },
+    slots:     { label: 'Slots',     emoji: '🎰' },
+    mines:     { label: 'Mines',     emoji: '💣' },
+    plinko:    { label: 'Plinko',    emoji: '🔵' },
+    crash:     { label: 'Crash',     emoji: '🚀' },
+    hilo:      { label: 'Hi-Lo',     emoji: '🎲' },
+  };
+
+  activeBoosts(): { game: string; label: string; emoji: string; boost: number }[] {
+    return Object.entries(this.boosts())
+      .filter(([, v]) => v > 0)
+      .map(([game, boost]) => ({ game, boost, ...this.gameLabels[game] }));
+  }
 
   readonly games: {
     key: string;
@@ -79,10 +98,11 @@ export class Stats implements OnInit {
     },
   ];
 
-  constructor(private statsService: StatsService) {}
+  constructor(private statsService: StatsService, private achievementsService: AchievementsService) {}
 
   ngOnInit(): void {
     this.statsService.getStats().subscribe(s => this.stats.set(s));
+    this.achievementsService.getBoosts().subscribe(b => this.boosts.set(b));
   }
 
   reset(): void {

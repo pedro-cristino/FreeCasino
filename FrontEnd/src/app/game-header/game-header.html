@@ -23,6 +23,25 @@
         {{ profitLoss >= 0 ? '+' : '' }}${{ profitLoss }}
       </span>
     </div>
+
+    @if (levelService.levelInfo(); as lvl) {
+      <div class="level-block">
+        <div class="level-top">
+          <span class="level-badge">Niv.{{ lvl.level }}</span>
+          <span class="level-name">{{ lvl.levelName }}</span>
+        </div>
+        <div class="xp-bar-wrap">
+          <div class="xp-bar" [style.width.%]="lvl.progress"></div>
+        </div>
+        <div class="xp-label">
+          @if (lvl.nextLevelXp !== null) {
+            {{ lvl.xp | number:'1.0-0' }} / {{ lvl.nextLevelXp | number:'1.0-0' }} XP
+          } @else {
+            MAX
+          }
+        </div>
+      </div>
+    }
   </div>
 </div>
 

@@ -13,9 +13,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        if (builder.Environment.IsDevelopment())
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        else
+            policy.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod();
     });
 });
 
@@ -31,12 +32,61 @@ using (var scope = app.Services.CreateScope())
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
             Username TEXT NOT NULL,
             Score REAL NOT NULL,
+            GameType TEXT NOT NULL DEFAULT 'multiple',
             SavedAt TEXT NOT NULL
         )
     """);
+    try { db.Database.ExecuteSqlRaw("ALTER TABLE HighScores ADD COLUMN GameType TEXT NOT NULL DEFAULT 'multiple'"); }
+    catch { /* Column already exists */ }
     // Add PasswordHash column to existing Users table if missing
     try { db.Database.ExecuteSqlRaw("ALTER TABLE Users ADD COLUMN PasswordHash TEXT NOT NULL DEFAULT ''"); }
     catch { /* Column already exists */ }
+    try { db.Database.ExecuteSqlRaw("ALTER TABLE Users ADD COLUMN Xp REAL NOT NULL DEFAULT 0"); }
+    catch { /* Column already exists */ }
+    try { db.Database.ExecuteSqlRaw("ALTER TABLE Users ADD COLUMN Level INTEGER NOT NULL DEFAULT 1"); }
+    catch { /* Column already exists */ }
+
+    // Create LevelThresholds table and seed if empty
+    db.Database.ExecuteSqlRaw("""
+        CREATE TABLE IF NOT EXISTS LevelThresholds (
+            Level      INTEGER PRIMARY KEY,
+            RequiredXp REAL    NOT NULL,
+            Name       TEXT    NOT NULL
+        )
+    """);
+    db.Database.ExecuteSqlRaw("""
+        INSERT OR IGNORE INTO LevelThresholds (Level, RequiredXp, Name) VALUES
+            (1,  0,       'Touriste'),
+            (2,  50,      'Novice'),
+            (3,  150,     'Habitué'),
+            (4,  350,     'Joueur'),
+            (5,  700,     'Amateur'),
+            (6,  1200,    'Régulier'),
+            (7,  2000,    'Vétéran'),
+            (8,  3200,    'Expert'),
+            (9,  5000,    'Maître'),
+            (10, 7500,    'Grand Maître'),
+            (11, 11000,   'Élite'),
+            (12, 16000,   'Champion'),
+            (13, 23000,   'Légende'),
+            (14, 32000,   'Mythique'),
+            (15, 45000,   'Icône'),
+            (16, 62000,   'Prodige'),
+            (17, 85000,   'Intouchable'),
+            (18, 115000,  'Transcendant'),
+            (19, 155000,  'Omniscient'),
+            (20, 200000,  'Casino Royale')
+    """);
+
+    // Create UserAchievements table if missing
+    db.Database.ExecuteSqlRaw("""
+        CREATE TABLE IF NOT EXISTS UserAchievements (
+            Username       TEXT NOT NULL,
+            AchievementKey TEXT NOT NULL,
+            UnlockedAt     TEXT NOT NULL,
+            PRIMARY KEY (Username, AchievementKey)
+        )
+    """);
 
     // Create UserStats table if missing
     db.Database.ExecuteSqlRaw("""

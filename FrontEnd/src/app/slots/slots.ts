@@ -4,6 +4,7 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BalanceService } from '../services/balance.service';
 import { StatsService } from '../services/stats.service';
+import { AchievementsService } from '../services/achievements.service';
 import { GameHeader } from '../game-header/game-header';
 
 const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '🔔', '💎', '7️⃣'];
@@ -77,7 +78,9 @@ export class Slots implements OnDestroy {
   private spinInterval: ReturnType<typeof setInterval> | null = null;
   private timeouts: ReturnType<typeof setTimeout>[] = [];
 
-  constructor(private balanceService: BalanceService, private statsService: StatsService) {
+  private gameBoost = 0;
+
+  constructor(private balanceService: BalanceService, private statsService: StatsService, private achievementsService: AchievementsService) {
     toObservable(balanceService.balance)
       .pipe(
         filter(b => b > 0),
@@ -86,6 +89,7 @@ export class Slots implements OnDestroy {
       .subscribe(b => {
         this.balance.set(b);
       });
+    achievementsService.getBoosts().subscribe(b => { this.gameBoost = b['slots'] ?? 0; });
   }
 
   ngOnDestroy(): void {
@@ -182,7 +186,11 @@ export class Slots implements OnDestroy {
       multiplier = Math.max(1, Math.floor((PAYOUTS[sym] ?? 2) / 3));
     }
 
-    const winnings = Math.round(betAmount * multiplier * 100) / 100;
+    let winnings = Math.round(betAmount * multiplier * 100) / 100;
+    const rawProfit = winnings - betAmount;
+    if (rawProfit > 0 && this.gameBoost > 0) {
+      winnings = Math.round((betAmount + rawProfit * (1 + this.gameBoost / 100)) * 100) / 100;
+    }
     const profit = Math.round((winnings - betAmount) * 100) / 100;
     const newBalance = Math.round((this.balance() + winnings) * 100) / 100;
 

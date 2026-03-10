@@ -59,6 +59,22 @@
       </div>
     </section>
 
+    <!-- ── Boosts actifs ─────────────────────────────────────────────── -->
+    @if (activeBoosts().length > 0) {
+      <section class="section">
+        <h2 class="section-title">Boosts actifs (succès)</h2>
+        <div class="boosts-grid">
+          @for (b of activeBoosts(); track b.game) {
+            <div class="boost-card">
+              <span class="boost-emoji">{{ b.emoji }}</span>
+              <span class="boost-label">{{ b.label }}</span>
+              <span class="boost-value">+{{ b.boost }}%</span>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
     <!-- ── Records ───────────────────────────────────────────────────── -->
     <section class="section">
       <h2 class="section-title">Records</h2>

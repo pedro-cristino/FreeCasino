@@ -109,6 +109,41 @@
   letter-spacing: 1px;
 }
 
+/* ── Boosts grid ─────────────────────────────────────────────────────────── */
+
+.boosts-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.boost-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(46, 204, 113, 0.07);
+  border: 1px solid rgba(46, 204, 113, 0.25);
+  border-radius: 10px;
+  padding: 10px 16px;
+}
+
+.boost-emoji {
+  font-size: 1.1rem;
+}
+
+.boost-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.boost-value {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #2ecc71;
+  margin-left: 4px;
+}
+
 /* ── Records grid ────────────────────────────────────────────────────────── */
 
 .records-grid {

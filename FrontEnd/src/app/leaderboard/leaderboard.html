@@ -1,36 +1,100 @@
-<div class="leaderboard-container">
-  <h1 class="title">🏆 Leaderboard</h1>
+<div class="leaderboard-page">
 
-  <div class="loading" *ngIf="loading()">Chargement...</div>
+  <!-- Score Leaderboard -->
+  <section class="lb-section">
+    <h2 class="lb-title">🏆 Meilleurs Scores</h2>
 
-  <div class="empty" *ngIf="!loading() && entries().length === 0">
-    Aucun score enregistré pour le moment.
-  </div>
+    <!-- Filters -->
+    <div class="filter-bar">
+      @for (f of filters; track f.key) {
+        <button
+          class="filter-btn"
+          [class.active]="activeFilter() === f.key"
+          (click)="setFilter(f.key)"
+        >
+          {{ f.emoji }} {{ f.label }}
+        </button>
+      }
+    </div>
 
-  <table class="leaderboard-table" *ngIf="!loading() && entries().length > 0">
-    <thead>
-      <tr>
-        <th class="col-rank">#</th>
-        <th class="col-user">Joueur</th>
-        <th class="col-score">Score</th>
-        <th class="col-date">Date</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let entry of entries(); let i = index"
-          [class.gold]="i === 0"
-          [class.silver]="i === 1"
-          [class.bronze]="i === 2">
-        <td class="col-rank">
-          <span *ngIf="i === 0">🥇</span>
-          <span *ngIf="i === 1">🥈</span>
-          <span *ngIf="i === 2">🥉</span>
-          <span *ngIf="i > 2">{{ i + 1 }}</span>
-        </td>
-        <td class="col-user">{{ entry.username }}</td>
-        <td class="col-score">${{ entry.score }}</td>
-        <td class="col-date">{{ entry.savedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
-      </tr>
-    </tbody>
-  </table>
+    @if (loading()) {
+      <div class="lb-loading">Chargement...</div>
+    } @else if (entries().length === 0) {
+      <div class="lb-empty">Aucun score enregistré pour ce filtre.</div>
+    } @else {
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th class="col-rank">#</th>
+            <th class="col-user">Joueur</th>
+            <th class="col-score">Score</th>
+            <th class="col-game">Jeu</th>
+            <th class="col-date">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of entries(); track entry.username + entry.savedAt; let i = $index) {
+            <tr [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
+              <td class="col-rank">
+                @if (i === 0) { <span>🥇</span> }
+                @else if (i === 1) { <span>🥈</span> }
+                @else if (i === 2) { <span>🥉</span> }
+                @else { <span>{{ i + 1 }}</span> }
+              </td>
+              <td class="col-user">{{ entry.username }}</td>
+              <td class="col-score">${{ entry.score }}</td>
+              <td class="col-game">
+                <span class="game-badge" [attr.data-game]="entry.gameType">
+                  {{ gameLabel(entry.gameType).emoji }} {{ gameLabel(entry.gameType).label }}
+                </span>
+              </td>
+              <td class="col-date">{{ entry.savedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <!-- Level Leaderboard -->
+  <section class="lb-section">
+    <h2 class="lb-title">⭐ Classement Niveaux</h2>
+
+    @if (levelLoading()) {
+      <div class="lb-loading">Chargement...</div>
+    } @else if (levelEntries().length === 0) {
+      <div class="lb-empty">Aucun joueur enregistré pour le moment.</div>
+    } @else {
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th class="col-rank">#</th>
+            <th class="col-user">Joueur</th>
+            <th class="col-level">Niveau</th>
+            <th class="col-lvlname">Rang</th>
+            <th class="col-xp">XP</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of levelEntries(); track entry.username; let i = $index) {
+            <tr [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
+              <td class="col-rank">
+                @if (i === 0) { <span>🥇</span> }
+                @else if (i === 1) { <span>🥈</span> }
+                @else if (i === 2) { <span>🥉</span> }
+                @else { <span>{{ i + 1 }}</span> }
+              </td>
+              <td class="col-user">{{ entry.username }}</td>
+              <td class="col-level">
+                <span class="level-badge">Niv. {{ entry.level }}</span>
+              </td>
+              <td class="col-lvlname">{{ entry.levelName }}</td>
+              <td class="col-xp">{{ entry.xp | number: '1.0-0' }} XP</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
 </div>

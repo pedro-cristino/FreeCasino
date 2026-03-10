@@ -7,11 +7,15 @@ public class CasinoDbContext(DbContextOptions<CasinoDbContext> options) : DbCont
     public DbSet<User> Users { get; set; }
     public DbSet<HighScore> HighScores { get; set; }
     public DbSet<UserStats> UserStats { get; set; }
+    public DbSet<UserAchievement> UserAchievements { get; set; }
+    public DbSet<LevelThreshold> LevelThresholds { get; set; }
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
         mb.Entity<User>().HasKey(u => u.Username);
         mb.Entity<UserStats>().HasKey(s => s.Username);
+        mb.Entity<UserAchievement>().HasKey(a => new { a.Username, a.AchievementKey });
+        mb.Entity<LevelThreshold>().HasKey(l => l.Level);
     }
 }
 
@@ -20,6 +24,15 @@ public class User
     public string Username { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public double Balance { get; set; } = 1000;
+    public double Xp { get; set; } = 0;
+    public int Level { get; set; } = 1;
+}
+
+public class LevelThreshold
+{
+    public int Level { get; set; }
+    public double RequiredXp { get; set; }
+    public string Name { get; set; } = string.Empty;
 }
 
 public class UserStats
@@ -71,10 +84,18 @@ public class UserStats
     public int HiloMaxStreak { get; set; }
 }
 
+public class UserAchievement
+{
+    public string Username { get; set; } = string.Empty;
+    public string AchievementKey { get; set; } = string.Empty;
+    public string UnlockedAt { get; set; } = string.Empty;
+}
+
 public class HighScore
 {
     public int Id { get; set; }
     public string Username { get; set; } = string.Empty;
     public double Score { get; set; }
+    public string GameType { get; set; } = "multiple";
     public DateTime SavedAt { get; set; } = DateTime.UtcNow;
 }

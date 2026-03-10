@@ -1,14 +1,37 @@
 <div class="achievements-page">
   <div class="page-header">
     <h1 class="page-title">🏅 Succès</h1>
-    <p class="page-subtitle">0 / 100 débloqués</p>
+    <p class="page-subtitle">{{ totalUnlocked() }} / 32 succès débloqués</p>
   </div>
 
-  <div class="achievements-grid">
-    @for (slot of slots; track slot) {
-      <div class="achievement-slot locked">
-        <div class="achievement-icon">?</div>
-      </div>
+  @if (groups().length > 0) {
+    @for (g of groups(); track g.game) {
+      <section class="game-section">
+        <h2 class="section-title">
+          <span class="section-emoji">{{ g.emoji }}</span>
+          {{ g.label }}
+        </h2>
+        <div class="tier-grid">
+          @for (a of g.achievements; track a.key) {
+            <div class="achievement-card" [class.unlocked]="a.unlocked" [class.locked]="!a.unlocked">
+              @if (a.unlocked) {
+                <div class="card-emoji">{{ g.emoji }}</div>
+                <div class="tier-badge tier-{{ a.tier }}">{{ tierLabel(a.tier) }}</div>
+                <div class="card-name">{{ a.name }}</div>
+                <div class="card-desc">{{ a.description }}</div>
+                <div class="card-boost">+{{ a.boostPercent }}% gains</div>
+              } @else {
+                <div class="card-locked-icon">?</div>
+                <div class="tier-badge tier-{{ a.tier }}">{{ tierLabel(a.tier) }}</div>
+                <div class="card-locked-hint">{{ a.description }}</div>
+                <div class="card-boost muted">+{{ a.boostPercent }}% gains</div>
+              }
+            </div>
+          }
+        </div>
+      </section>
     }
-  </div>
+  } @else {
+    <div class="loading">Chargement…</div>
+  }
 </div>
