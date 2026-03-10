@@ -138,9 +138,11 @@
 
 .table-main {
   display: grid;
-  grid-template-columns: 56px repeat(12, 36px 12px) 48px;
-  grid-template-rows: 44px 12px 44px 12px 44px 6px 28px;
-  /* no gap — gaps are in the grid tracks themselves */
+  width: 100%;
+  min-width: 580px;
+  grid-template-columns: 56px repeat(12, minmax(32px, 1fr) 12px) 48px;
+  grid-template-rows: 44px 12px 44px 12px 44px 6px 28px 8px 36px 6px 36px;
+  /* no gap — gaps are grid tracks; outside bets live in rows 9 and 11 */
 }
 
 /* ── Zero cell ───────────────────────────────────────────────────────────── */
@@ -361,18 +363,9 @@
 .col-bet.has-bet { background: rgba(241,196,15,0.2); border-color: rgba(241,196,15,0.6); }
 .col-bet.winning-zone { background: rgba(46,204,113,0.3); border-color: #2ecc71; }
 
-/* ── Outside rows ────────────────────────────────────────────────────────── */
-
-.outside-row {
-  display: flex;
-  gap: 4px;
-  margin-left: 68px; /* align with number columns, after zero */
-  margin-right: 60px; /* align with numbers, before col-bet */
-}
+/* ── Outside cells (dozens + even money, placed inside the main grid) ─────── */
 
 .outside-cell {
-  flex: 1;
-  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -398,7 +391,6 @@
 .outside-cell.red-cell.winning-zone   { box-shadow: 0 0 0 2px #2ecc71; }
 .outside-cell.black-cell.winning-zone { box-shadow: 0 0 0 2px #2ecc71; }
 
-.dozen-row .outside-cell { height: 34px; }
 
 /* ── Bet chip on number/outside cells ────────────────────────────────────── */
 

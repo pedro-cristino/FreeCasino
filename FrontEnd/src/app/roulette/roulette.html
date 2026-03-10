@@ -177,13 +177,10 @@
           <span class="zone-chip" *ngIf="getBetAmount(z.key) > 0">{{ getBetAmount(z.key) }}</span>
         </div>
 
-      </div><!-- /table-main -->
+        <!-- ── Dozens row (grid row 9) ───────────────────────────────────── -->
 
-      <!-- ── Outside bets ── -->
-
-      <!-- Dozen bets -->
-      <div class="outside-row dozen-row">
         <div class="outside-cell dozen"
+             style="grid-column: 2 / 10; grid-row: 9"
              [class.has-bet]="getBetAmount('dozen-1') > 0"
              [class.winning-zone]="isWinningZone('dozen-1')"
              (click)="placeBet('dozen-1')"
@@ -194,6 +191,7 @@
           <span class="bet-chip" *ngIf="getBetAmount('dozen-1') > 0">{{ getBetAmount('dozen-1') }}</span>
         </div>
         <div class="outside-cell dozen"
+             style="grid-column: 10 / 18; grid-row: 9"
              [class.has-bet]="getBetAmount('dozen-2') > 0"
              [class.winning-zone]="isWinningZone('dozen-2')"
              (click)="placeBet('dozen-2')"
@@ -204,6 +202,7 @@
           <span class="bet-chip" *ngIf="getBetAmount('dozen-2') > 0">{{ getBetAmount('dozen-2') }}</span>
         </div>
         <div class="outside-cell dozen"
+             style="grid-column: 18 / 26; grid-row: 9"
              [class.has-bet]="getBetAmount('dozen-3') > 0"
              [class.winning-zone]="isWinningZone('dozen-3')"
              (click)="placeBet('dozen-3')"
@@ -213,11 +212,11 @@
           3<sup>e</sup> 12
           <span class="bet-chip" *ngIf="getBetAmount('dozen-3') > 0">{{ getBetAmount('dozen-3') }}</span>
         </div>
-      </div>
 
-      <!-- Even-money bets -->
-      <div class="outside-row simple-row">
+        <!-- ── Even-money row (grid row 11) ──────────────────────────────── -->
+
         <div class="outside-cell"
+             style="grid-column: 2 / 6; grid-row: 11"
              [class.has-bet]="getBetAmount('low') > 0"
              [class.winning-zone]="isWinningZone('low')"
              (click)="placeBet('low')"
@@ -227,6 +226,7 @@
           1–18<span class="bet-chip" *ngIf="getBetAmount('low') > 0">{{ getBetAmount('low') }}</span>
         </div>
         <div class="outside-cell"
+             style="grid-column: 6 / 10; grid-row: 11"
              [class.has-bet]="getBetAmount('even') > 0"
              [class.winning-zone]="isWinningZone('even')"
              (click)="placeBet('even')"
@@ -236,6 +236,7 @@
           Pair<span class="bet-chip" *ngIf="getBetAmount('even') > 0">{{ getBetAmount('even') }}</span>
         </div>
         <div class="outside-cell red-cell"
+             style="grid-column: 10 / 14; grid-row: 11"
              [class.has-bet]="getBetAmount('red') > 0"
              [class.winning-zone]="isWinningZone('red')"
              (click)="placeBet('red')"
@@ -245,6 +246,7 @@
           Rouge<span class="bet-chip" *ngIf="getBetAmount('red') > 0">{{ getBetAmount('red') }}</span>
         </div>
         <div class="outside-cell black-cell"
+             style="grid-column: 14 / 18; grid-row: 11"
              [class.has-bet]="getBetAmount('black') > 0"
              [class.winning-zone]="isWinningZone('black')"
              (click)="placeBet('black')"
@@ -254,6 +256,7 @@
           Noir<span class="bet-chip" *ngIf="getBetAmount('black') > 0">{{ getBetAmount('black') }}</span>
         </div>
         <div class="outside-cell"
+             style="grid-column: 18 / 22; grid-row: 11"
              [class.has-bet]="getBetAmount('odd') > 0"
              [class.winning-zone]="isWinningZone('odd')"
              (click)="placeBet('odd')"
@@ -263,6 +266,7 @@
           Impair<span class="bet-chip" *ngIf="getBetAmount('odd') > 0">{{ getBetAmount('odd') }}</span>
         </div>
         <div class="outside-cell"
+             style="grid-column: 22 / 26; grid-row: 11"
              [class.has-bet]="getBetAmount('high') > 0"
              [class.winning-zone]="isWinningZone('high')"
              (click)="placeBet('high')"
@@ -271,7 +275,8 @@
              (mouseleave)="clearHovered()">
           19–36<span class="bet-chip" *ngIf="getBetAmount('high') > 0">{{ getBetAmount('high') }}</span>
         </div>
-      </div>
+
+      </div><!-- /table-main -->
 
     </div><!-- /roulette-table -->
   </div><!-- /table-wrapper -->
