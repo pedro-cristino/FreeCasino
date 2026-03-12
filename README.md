@@ -44,3 +44,5 @@ Un casino en ligne gratuit avec 8 jeux, un système de progression par niveaux, 
     <td><img src=".github/scoreboard.png" alt="Classement"/></td>
   </tr>
 </table>
+
+Test d'utilisation claude code avec Sonnet 4.6 uniquement
