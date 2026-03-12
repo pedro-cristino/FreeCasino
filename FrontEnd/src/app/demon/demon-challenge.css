@@ -1,0 +1,174 @@
+/* ── Backdrop ────────────────────────────────────────────────────────────── */
+
+.demon-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 24px;
+  pointer-events: none;
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+
+.demon-card {
+  pointer-events: all;
+  width: 300px;
+  background: linear-gradient(145deg, #1a0505 0%, #2d0b0b 60%, #1a0505 100%);
+  border: 1px solid rgba(220, 38, 38, 0.6);
+  border-radius: 18px;
+  padding: 24px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow:
+    0 0 30px rgba(220, 38, 38, 0.35),
+    0 0 80px rgba(220, 38, 38, 0.12),
+    inset 0 0 40px rgba(220, 38, 38, 0.05);
+  animation: demon-slide-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes demon-slide-in {
+  from { transform: translateY(120%) scale(0.85); opacity: 0; }
+  to   { transform: translateY(0)   scale(1);    opacity: 1; }
+}
+
+/* ── Skull ───────────────────────────────────────────────────────────────── */
+
+.demon-skull {
+  font-size: 2.8rem;
+  line-height: 1;
+  animation: skull-pulse 1.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(220, 38, 38, 0.9));
+}
+
+@keyframes skull-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.12); }
+}
+
+/* ── Title ───────────────────────────────────────────────────────────────── */
+
+.demon-title {
+  font-size: 1.7rem;
+  font-weight: 900;
+  letter-spacing: 6px;
+  color: #ff2a2a;
+  text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(255, 42, 42, 0.8);
+}
+
+/* ── Game tag ────────────────────────────────────────────────────────────── */
+
+.demon-game {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fca5a5;
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 30px;
+  padding: 4px 14px;
+}
+
+.demon-emoji { font-size: 1.1rem; }
+
+/* ── Description ─────────────────────────────────────────────────────────── */
+
+.demon-desc {
+  font-size: 0.8rem;
+  color: rgba(255, 200, 200, 0.6);
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.demon-desc strong {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+}
+
+/* ── Countdown bar ───────────────────────────────────────────────────────── */
+
+.countdown-bar-wrap {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.countdown-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #ff2a2a, #ff6b6b);
+  border-radius: 6px;
+  transition: width 0.9s linear;
+  box-shadow: 0 0 8px rgba(255, 42, 42, 0.7);
+}
+
+.countdown-label {
+  position: absolute;
+  right: 0;
+  top: -18px;
+  font-size: 0.65rem;
+  color: rgba(255, 120, 120, 0.7);
+  letter-spacing: 1px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+
+.demon-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.btn-accept {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #b91c1c, #dc2626, #b91c1c);
+  border: 1px solid rgba(255, 100, 100, 0.4);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 0 16px rgba(220, 38, 38, 0.5);
+}
+
+.btn-accept:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 28px rgba(220, 38, 38, 0.8);
+}
+
+.btn-accept:active {
+  transform: scale(0.98);
+}
+
+.btn-dismiss {
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.btn-dismiss:hover {
+  color: rgba(255, 255, 255, 0.45);
+  border-color: rgba(255, 255, 255, 0.2);
+}

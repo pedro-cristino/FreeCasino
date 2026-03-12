@@ -56,11 +56,11 @@
   font-size: 1.1rem;
 }
 
-/* ── Tier grid (4 cards per game) ────────────────────────────────────────── */
+/* ── Tier grid ───────────────────────────────────────────────────────────── */
 
 .tier-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
   gap: 12px;
 }
 
@@ -171,6 +171,71 @@
   background: rgba(231, 76, 60, 0.15);
   color: #e74c3c;
   border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+/* Loss tiers (same thresholds, red palette) */
+.tier-badge.tier-debutant_pertes {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e67e73;
+  border: 1px solid rgba(231, 76, 60, 0.25);
+}
+
+.tier-badge.tier-intermediaire_pertes {
+  background: rgba(230, 126, 34, 0.12);
+  color: #e67e22;
+  border: 1px solid rgba(230, 126, 34, 0.3);
+}
+
+.tier-badge.tier-confirme_pertes {
+  background: rgba(192, 57, 43, 0.15);
+  color: #c0392b;
+  border: 1px solid rgba(192, 57, 43, 0.35);
+}
+
+.tier-badge.tier-degen_pertes {
+  background: rgba(100, 0, 0, 0.2);
+  color: #ff4444;
+  border: 1px solid rgba(255, 68, 68, 0.35);
+}
+
+/* New progression tiers */
+.tier-badge.tier-bronze {
+  background: rgba(176, 100, 40, 0.15);
+  color: #cd7f32;
+  border: 1px solid rgba(176, 100, 40, 0.35);
+}
+
+.tier-badge.tier-argent {
+  background: rgba(170, 170, 170, 0.12);
+  color: #c0c0c0;
+  border: 1px solid rgba(180, 180, 180, 0.3);
+}
+
+.tier-badge.tier-or {
+  background: rgba(212, 175, 55, 0.15);
+  color: #d4af37;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.tier-badge.tier-platine {
+  background: rgba(120, 80, 220, 0.15);
+  color: #a78bfa;
+  border: 1px solid rgba(120, 80, 220, 0.35);
+}
+
+.tier-badge.tier-legende {
+  background: linear-gradient(90deg,
+    rgba(212, 175, 55, 0.2),
+    rgba(231, 76, 60, 0.2),
+    rgba(155, 89, 182, 0.2));
+  color: #fff;
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  animation: legende-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes legende-glow {
+  from { box-shadow: 0 0 6px rgba(212, 175, 55, 0.4); }
+  to   { box-shadow: 0 0 14px rgba(231, 76, 60, 0.6); }
 }
 
 /* ── Loading ─────────────────────────────────────────────────────────────── */

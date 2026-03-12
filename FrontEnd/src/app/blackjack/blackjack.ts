@@ -61,6 +61,7 @@ export interface Hand {
   status: HandStatus;
   value?: number;
   isSoft?: boolean;
+  wasDoubled?: boolean;
 }
 
 export interface Seat {
@@ -152,6 +153,7 @@ export class Blackjack extends BaseGame implements OnInit {
   betInputs: { [key: number]: number } = {};
   lastBetInputs: { [key: number]: number } = {};
   lastSeatsCount = 1;
+  private lastWasAllIn = false;
 
   isResolving = false;
 
@@ -307,6 +309,7 @@ export class Blackjack extends BaseGame implements OnInit {
 
     // Deduct bets from balance
     const totalBet = Object.values(this.betInputs).reduce((sum, bet) => sum + bet, 0);
+    this.lastWasAllIn = totalBet === state.playerBalance;
     const newBalance = state.playerBalance - totalBet;
 
     // Update seats with bets
@@ -434,7 +437,8 @@ export class Blackjack extends BaseGame implements OnInit {
     hand.cards.push(this.dealCard());
     this.evaluateHand(hand);
 
-    // Automatically stand
+    // Mark hand as doubled and automatically stand
+    hand.wasDoubled = true;
     if (hand.status === HandStatus.ACTIVE) {
       hand.status = HandStatus.STAND;
     }
@@ -586,22 +590,22 @@ export class Blackjack extends BaseGame implements OnInit {
     const dealerBust = state.dealerHand.status === HandStatus.BUST;
     let totalWinnings = 0;
 
-    type HandStat = { hand: Hand; wasBlackjack: boolean; wasSplit: boolean };
+    type HandStat = { hand: Hand; wasBlackjack: boolean; wasSplit: boolean; wasDouble: boolean };
     const handStats: HandStat[] = [];
 
     for (const seat of state.seats) {
       if (!seat.active) continue;
 
-      // Capture blackjack status before resolveHand() changes it
+      // Capture status before resolveHand() changes it
       const mainWasBlackjack = seat.mainHand.status === HandStatus.BLACKJACK;
       const hasSplit = !!seat.splitHand;
 
       totalWinnings += this.resolveHand(seat.mainHand, dealerValue, dealerBust, this.gameBoost);
-      handStats.push({ hand: seat.mainHand, wasBlackjack: mainWasBlackjack, wasSplit: hasSplit });
+      handStats.push({ hand: seat.mainHand, wasBlackjack: mainWasBlackjack, wasSplit: hasSplit, wasDouble: seat.mainHand.wasDoubled ?? false });
 
       if (seat.splitHand) {
         totalWinnings += this.resolveHand(seat.splitHand, dealerValue, dealerBust, this.gameBoost);
-        handStats.push({ hand: seat.splitHand, wasBlackjack: false, wasSplit: true });
+        handStats.push({ hand: seat.splitHand, wasBlackjack: false, wasSplit: true, wasDouble: seat.splitHand.wasDoubled ?? false });
       }
     }
 
@@ -627,7 +631,7 @@ export class Blackjack extends BaseGame implements OnInit {
     this.gameState.set({ ...state });
     this.balanceService.save(state.playerBalance);
 
-    for (const { hand, wasBlackjack, wasSplit } of handStats) {
+    for (const { hand, wasBlackjack, wasSplit, wasDouble } of handStats) {
       if (hand.status === HandStatus.PUSH) continue;
       const won = hand.status === HandStatus.WIN;
       const amountWon = won ? (wasBlackjack ? Math.round(hand.bet * 1.5 * 100) / 100 : hand.bet) : 0;
@@ -637,10 +641,11 @@ export class Blackjack extends BaseGame implements OnInit {
         amountWon,
         amountLost: won ? 0 : hand.bet,
         amountBet: hand.bet,
-        wasAllIn: false,
+        wasAllIn: this.lastWasAllIn,
         currentBalance: state.playerBalance,
         wasBlackjack,
         wasSplit,
+        wasDouble,
       });
     }
   }

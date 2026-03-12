@@ -84,6 +84,7 @@ export class Baccarat extends BaseGame implements OnInit {
   isResolving = false;
   betInputs = { player: 0, banker: 0, tie: 0 };
   lastBetInputs = { player: 0, banker: 0, tie: 0 };
+  private lastWasAllIn = false;
 
   gamesPlayed = computed(() => this.gameState().history.length);
   gamesWon = computed(() => this.gameState().history.filter(h => h.profit > 0).length);
@@ -179,6 +180,7 @@ export class Baccarat extends BaseGame implements OnInit {
     const state = this.gameState();
     const deck = state.deck.length === 0 ? this.createDeck() : [...state.deck];
     const bets = { ...this.betInputs };
+    this.lastWasAllIn = this.totalBetInput() === state.balance;
     const balanceAfterBets = state.balance - this.totalBetInput();
 
     // Pre-calculate all cards upfront
@@ -304,7 +306,7 @@ export class Baccarat extends BaseGame implements OnInit {
       amountWon: profit > 0 ? profit : 0,
       amountLost: profit < 0 ? Math.abs(profit) : 0,
       amountBet: totalBet,
-      wasAllIn: false,
+      wasAllIn: this.lastWasAllIn,
       currentBalance: newBalance,
     });
     this.gameState.update(s => ({

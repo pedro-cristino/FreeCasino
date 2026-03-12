@@ -20,6 +20,7 @@ export class Achievements implements OnInit {
   achievements = signal<Achievement[] | null>(null);
 
   private readonly gameMeta: { game: string; label: string; emoji: string }[] = [
+    { game: 'global',    label: 'Global',    emoji: '🌐' },
     { game: 'blackjack', label: 'Blackjack', emoji: '🃏' },
     { game: 'baccarat',  label: 'Baccarat',  emoji: '🎴' },
     { game: 'roulette',  label: 'Roulette',  emoji: '🎡' },
@@ -29,8 +30,6 @@ export class Achievements implements OnInit {
     { game: 'crash',     label: 'Crash',     emoji: '🚀' },
     { game: 'hilo',      label: 'Hi-Lo',     emoji: '🎲' },
   ];
-
-  readonly tierOrder = ['debutant', 'intermediaire', 'confirme', 'degen'];
 
   groups = signal<GameGroup[]>([]);
 
@@ -42,19 +41,36 @@ export class Achievements implements OnInit {
       this.groups.set(
         this.gameMeta.map(m => ({
           ...m,
-          achievements: this.tierOrder
-            .map(tier => list.find(a => a.game === m.game && a.tier === tier)!)
-            .filter(Boolean),
-        })),
+          achievements: list.filter(a => a.game === m.game),
+        })).filter(g => g.achievements.length > 0),
       );
     });
   }
 
   tierLabel(tier: string): string {
-    return { debutant: 'Débutant', intermediaire: 'Intermédiaire', confirme: 'Confirmé', degen: 'Degen' }[tier] ?? tier;
+    const labels: Record<string, string> = {
+      debutant:               'Débutant',
+      intermediaire:          'Intermédiaire',
+      confirme:               'Confirmé',
+      degen:                  'Degen',
+      debutant_pertes:        'Débutant',
+      intermediaire_pertes:   'Intermédiaire',
+      confirme_pertes:        'Confirmé',
+      degen_pertes:           'Degen',
+      bronze:                 'Bronze',
+      argent:                 'Argent',
+      or:                     'Or',
+      platine:                'Platine',
+      legende:                '💀 Légende',
+    };
+    return labels[tier] ?? tier;
   }
 
   totalUnlocked(): number {
     return this.achievements()?.filter(a => a.unlocked).length ?? 0;
+  }
+
+  totalCount(): number {
+    return this.achievements()?.length ?? 0;
   }
 }

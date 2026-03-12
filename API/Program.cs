@@ -126,10 +126,24 @@ using (var scope = app.Services.CreateScope())
             HiloWins INTEGER NOT NULL DEFAULT 0,
             BlackjackBlackjacks INTEGER NOT NULL DEFAULT 0,
             BlackjackSplits INTEGER NOT NULL DEFAULT 0,
+            BlackjackDoubles INTEGER NOT NULL DEFAULT 0,
             CrashMaxMultiplier REAL NOT NULL DEFAULT 0,
-            HiloMaxStreak INTEGER NOT NULL DEFAULT 0
+            HiloMaxStreak INTEGER NOT NULL DEFAULT 0,
+            MinesMaxMultiplier REAL NOT NULL DEFAULT 0,
+            AllInWins INTEGER NOT NULL DEFAULT 0
         )
     """);
+
+    // Add columns that may be missing on existing databases
+    foreach (var ddl in new[]
+    {
+        "ALTER TABLE UserStats ADD COLUMN BlackjackDoubles INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE UserStats ADD COLUMN MinesMaxMultiplier REAL NOT NULL DEFAULT 0",
+        "ALTER TABLE UserStats ADD COLUMN AllInWins INTEGER NOT NULL DEFAULT 0",
+    })
+    {
+        try { db.Database.ExecuteSqlRaw(ddl); } catch { /* column already exists — ignore */ }
+    }
 }
 
 if (app.Environment.IsDevelopment())

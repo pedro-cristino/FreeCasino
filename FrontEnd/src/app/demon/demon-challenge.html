@@ -1,0 +1,31 @@
+@if (demonService.offer(); as offer) {
+  <div class="demon-overlay" (click)="dismiss()">
+    <div class="demon-card" (click)="$event.stopPropagation()">
+
+      <div class="demon-skull">💀</div>
+
+      <div class="demon-title">ALL IN ?</div>
+
+      <div class="demon-game">
+        <span class="demon-emoji">{{ offer.emoji }}</span>
+        {{ offer.label }}
+      </div>
+
+      <p class="demon-desc">
+        Tout miser maintenant —<br>
+        <strong>×3 sur ta prochaine victoire</strong>
+      </p>
+
+      <div class="countdown-bar-wrap">
+        <div class="countdown-bar" [style.width.%]="countdownPct()"></div>
+        <span class="countdown-label">{{ demonService.countdown() }}s</span>
+      </div>
+
+      <div class="demon-actions">
+        <button class="btn-accept" (click)="accept()">💀 J'ACCEPTE</button>
+        <button class="btn-dismiss" (click)="dismiss()">Passer</button>
+      </div>
+
+    </div>
+  </div>
+}

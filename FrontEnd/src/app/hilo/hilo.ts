@@ -64,6 +64,7 @@ export class HiLo extends BaseGame implements OnInit {
 
   readonly HiLoPhase = HiLoPhase;
   readonly CHIP_VALUES = CHIP_VALUES;
+  private lastWasAllIn = false;
 
   gameState = signal<HiLoState>({
     phase: HiLoPhase.BETTING,
@@ -133,6 +134,7 @@ export class HiLo extends BaseGame implements OnInit {
   deal(): void {
     if (!this.canDeal()) return;
     const s = this.gameState();
+    this.lastWasAllIn = s.bet === s.balance;
     const deck = s.deck.length < 5 ? this.createDeck() : s.deck;
     const [card, newDeck] = this.drawFrom(deck);
 
@@ -212,7 +214,7 @@ export class HiLo extends BaseGame implements OnInit {
         amountWon: 0,
         amountLost: s.bet,
         amountBet: s.bet,
-        wasAllIn: false,
+        wasAllIn: this.lastWasAllIn,
         currentBalance: s.balance,
       });
     } else {

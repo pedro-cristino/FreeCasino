@@ -80,8 +80,11 @@ public class UserStats
     // Game-specific extras
     public int BlackjackBlackjacks { get; set; }
     public int BlackjackSplits { get; set; }
+    public int BlackjackDoubles { get; set; }
     public double CrashMaxMultiplier { get; set; }
     public int HiloMaxStreak { get; set; }
+    public double MinesMaxMultiplier { get; set; }
+    public int AllInWins { get; set; }
 }
 
 public class UserAchievement

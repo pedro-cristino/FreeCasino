@@ -4,6 +4,7 @@ import { Subject, concatMap, catchError, EMPTY, tap } from 'rxjs';
 import { ToastService } from './toast.service';
 import { LevelService } from './level.service';
 import { environment } from '../../environments/environment';
+import type { Observable } from 'rxjs';
 
 export interface GameResult {
   game: string;
@@ -15,8 +16,10 @@ export interface GameResult {
   currentBalance: number;
   wasBlackjack?: boolean;
   wasSplit?: boolean;
+  wasDouble?: boolean;
   crashMultiplier?: number;
   hiloStreak?: number;
+  minesMultiplier?: number;
 }
 
 export interface UserStats {
@@ -54,8 +57,11 @@ export interface UserStats {
   hiloWins: number;
   blackjackBlackjacks: number;
   blackjackSplits: number;
+  blackjackDoubles: number;
   crashMaxMultiplier: number;
   hiloMaxStreak: number;
+  minesMaxMultiplier: number;
+  allInWins: number;
 }
 
 interface GameResponse {
@@ -68,6 +74,8 @@ interface GameResponse {
 export class StatsService {
   private apiUrl = `${environment.apiUrl}/api/stats`;
   private queue$ = new Subject<GameResult>();
+  private resultSubject = new Subject<GameResult>();
+  readonly gameResult$: Observable<GameResult> = this.resultSubject.asObservable();
 
   constructor(private http: HttpClient, private toastService: ToastService, private levelService: LevelService) {
     // Process reports one at a time — prevents concurrent SQLite writes
@@ -93,6 +101,7 @@ export class StatsService {
 
   report(result: GameResult): void {
     this.currentRunGames.add(result.game);
+    this.resultSubject.next(result);
     this.queue$.next(result);
   }
 

@@ -59,9 +59,11 @@ public class StatsController(CasinoDbContext db) : BaseApiController
         int allIn  = dto.WasAllIn ? 1 : 0;
         int bj     = dto.WasBlackjack ? 1 : 0;
         int split  = dto.WasSplit ? 1 : 0;
+        int dbl    = dto.WasDouble ? 1 : 0;
         double pct = dto.AmountBet > 0 ? Math.Round(dto.AmountWon / dto.AmountBet * 100, 2) : 0;
         double cm  = dto.CrashMultiplier ?? 0.0;
         double hs  = dto.HiloStreak ?? 0;
+        double mm  = dto.MinesMultiplier ?? 0.0;
 
         // Single atomic UPDATE — no read-modify-write, no lost updates
         await db.Database.ExecuteSqlRawAsync("""
@@ -81,6 +83,7 @@ public class StatsController(CasinoDbContext db) : BaseApiController
                 TotalAllIns              = TotalAllIns + {6},
                 CurrentConsecutiveAllIns = CASE WHEN {6} = 1 THEN CurrentConsecutiveAllIns + 1 ELSE 0 END,
                 MaxConsecutiveAllIns     = MAX(MaxConsecutiveAllIns, CASE WHEN {6} = 1 THEN CurrentConsecutiveAllIns + 1 ELSE 0 END),
+                AllInWins           = AllInWins + CASE WHEN {6} = 1 AND {1} = 1 THEN 1 ELSE 0 END,
                 HighestBalance      = MAX(HighestBalance, {7}),
                 BlackjackHandsPlayed = BlackjackHandsPlayed + CASE WHEN {8} = 'blackjack' THEN 1 ELSE 0 END,
                 BaccaratGamesPlayed  = BaccaratGamesPlayed  + CASE WHEN {8} = 'baccarat'  THEN 1 ELSE 0 END,
@@ -100,13 +103,15 @@ public class StatsController(CasinoDbContext db) : BaseApiController
                 HiloWins      = HiloWins      + CASE WHEN {8} = 'hilo'      AND {1} = 1 THEN 1 ELSE 0 END,
                 BlackjackBlackjacks = BlackjackBlackjacks + {9},
                 BlackjackSplits     = BlackjackSplits     + {10},
+                BlackjackDoubles    = BlackjackDoubles    + {13},
                 CrashMaxMultiplier  = MAX(CrashMaxMultiplier, {11}),
-                HiloMaxStreak       = MAX(HiloMaxStreak, {12})
+                HiloMaxStreak       = MAX(HiloMaxStreak, {12}),
+                MinesMaxMultiplier  = MAX(MinesMaxMultiplier, {14})
             WHERE Username = {0}
             """,
             username, won, lost, dto.AmountWon, dto.AmountLost,
             pct, allIn, dto.CurrentBalance, dto.Game,
-            bj, split, cm, hs);
+            bj, split, cm, hs, dbl, mm);
     }
 
     private async Task<List<object>> CheckAndUnlockAchievements(string username, GameResultDto dto)
@@ -119,21 +124,9 @@ public class StatsController(CasinoDbContext db) : BaseApiController
         if (stats is null)
             return newAchievements;
 
-        var winsForGame = dto.Game switch
-        {
-            "blackjack" => stats.BlackjackWins,
-            "baccarat"  => stats.BaccaratWins,
-            "roulette"  => stats.RouletteWins,
-            "slots"     => stats.SlotsWins,
-            "mines"     => stats.MinesWins,
-            "plinko"    => stats.PlinkoWins,
-            "crash"     => stats.CrashWins,
-            "hilo"      => stats.HiloWins,
-            _           => 0,
-        };
-
+        // Check every achievement using its own GetValue condition
         var eligible = AchievementRegistry.All
-            .Where(a => a.Game == dto.Game && a.WinsRequired <= winsForGame)
+            .Where(a => a.GetValue(stats) >= a.WinsRequired)
             .Select(a => a.Key)
             .ToHashSet();
 
@@ -210,6 +203,8 @@ public class GameResultDto
     public double CurrentBalance { get; set; }
     public bool WasBlackjack { get; set; }
     public bool WasSplit { get; set; }
+    public bool WasDouble { get; set; }
     public double? CrashMultiplier { get; set; }
     public int? HiloStreak { get; set; }
+    public double? MinesMultiplier { get; set; }
 }

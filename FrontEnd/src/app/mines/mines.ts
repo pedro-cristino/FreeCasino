@@ -67,6 +67,7 @@ export class Mines extends BaseGame {
 
   private lastBet = 0;
   private lastMines = 3;
+  private lastWasAllIn = false;
 
   multiplier = computed(() => calcMult(this.revealedCount(), this.mineCount()));
   nextMultiplier = computed(() => calcMult(this.revealedCount() + 1, this.mineCount()));
@@ -142,6 +143,7 @@ export class Mines extends BaseGame {
     const mines = this.mineCount();
     this.lastBet = bet;
     this.lastMines = mines;
+    this.lastWasAllIn = bet === this.balance();
     this.activeBet.set(bet);
     this.balance.update(b => b - bet);
 
@@ -180,7 +182,7 @@ export class Mines extends BaseGame {
         amountWon: 0,
         amountLost: this.lastBet,
         amountBet: this.lastBet,
-        wasAllIn: false,
+        wasAllIn: this.lastWasAllIn,
         currentBalance: this.balance(),
       });
       this.history.update(h =>
@@ -232,8 +234,9 @@ export class Mines extends BaseGame {
       amountWon: profit,
       amountLost: 0,
       amountBet: this.lastBet,
-      wasAllIn: false,
+      wasAllIn: this.lastWasAllIn,
       currentBalance: newBalance,
+      minesMultiplier: mult,
     });
 
     this.history.update(h =>

@@ -46,13 +46,16 @@ public class AchievementsController(CasinoDbContext db) : BaseApiController
             .Select(a => a.AchievementKey)
             .ToListAsync();
 
+        string[] allGames = ["blackjack", "baccarat", "roulette", "slots", "mines", "plinko", "crash", "hilo"];
         var boosts = new Dictionary<string, double>();
         foreach (var key in unlockedKeys)
         {
-            if (AchievementRegistry.ByKey.TryGetValue(key, out var def))
+            if (!AchievementRegistry.ByKey.TryGetValue(key, out var def)) continue;
+            var targets = def.Game == "global" ? allGames : (IEnumerable<string>)[def.Game];
+            foreach (var g in targets)
             {
-                boosts.TryGetValue(def.Game, out var current);
-                boosts[def.Game] = current + def.BoostPercent;
+                boosts.TryGetValue(g, out var current);
+                boosts[g] = current + def.BoostPercent;
             }
         }
 

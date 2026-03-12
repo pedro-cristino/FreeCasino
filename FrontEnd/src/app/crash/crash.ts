@@ -66,6 +66,7 @@ export class Crash extends BaseGame implements AfterViewInit, OnDestroy {
   recentCrashes = signal<number[]>([]);
 
   lastBet = 0; // public for template (replay label)
+  private lastWasAllIn = false;
 
   private crashTarget = 1;
   private startTime = 0;
@@ -145,6 +146,7 @@ export class Crash extends BaseGame implements AfterViewInit, OnDestroy {
 
     const bet = this.bet();
     this.lastBet = bet;
+    this.lastWasAllIn = bet === this.balance();
     this.activeBet.set(bet);
     this.balance.update(b => b - bet);
     this.crashTarget = this.generateCrashMult();
@@ -179,7 +181,7 @@ export class Crash extends BaseGame implements AfterViewInit, OnDestroy {
       amountWon: Math.round((winAmount - this.activeBet()) * 100) / 100,
       amountLost: 0,
       amountBet: this.activeBet(),
-      wasAllIn: false,
+      wasAllIn: this.lastWasAllIn,
       currentBalance: newBalance,
       crashMultiplier: mult,
     });
@@ -246,7 +248,7 @@ export class Crash extends BaseGame implements AfterViewInit, OnDestroy {
         amountWon: 0,
         amountLost: this.activeBet(),
         amountBet: this.activeBet(),
-        wasAllIn: false,
+        wasAllIn: this.lastWasAllIn,
         currentBalance: balance,
       });
     }

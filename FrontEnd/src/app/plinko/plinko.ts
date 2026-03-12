@@ -34,6 +34,7 @@ interface Ball {
   frame: number;
   finalSlot: number;
   bet: number;
+  wasAllIn: boolean;
 }
 
 export interface PlinkoHistory {
@@ -58,7 +59,7 @@ export class Plinko extends BaseGame implements AfterViewInit, OnDestroy {
 
   @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  readonly CHIP_VALUES = CHIP_VALUES;
+  readonly CHIP_VALUES = [...CHIP_VALUES, 250, 500, 1000];
   readonly MULTIPLIERS = MULTIPLIERS;
 
   balance = signal(0);
@@ -113,6 +114,7 @@ export class Plinko extends BaseGame implements AfterViewInit, OnDestroy {
     if (!this.canDrop()) return;
 
     const bet = this.bet();
+    const wasAllIn = bet === this.balance();
     this.balance.update(b => b - bet);
 
     // Pre-determine the full path (+1 right / -1 left)
@@ -133,7 +135,7 @@ export class Plinko extends BaseGame implements AfterViewInit, OnDestroy {
       y: TOP_PAD + ROWS * ROW_SPACING + SLOT_H / 2,
     });
 
-    this.balls.push({ id: nextId++, keyframes, frame: 0, finalSlot, bet });
+    this.balls.push({ id: nextId++, keyframes, frame: 0, finalSlot, bet, wasAllIn });
 
     if (this.animFrame === null) this.runLoop();
   }
@@ -178,7 +180,7 @@ export class Plinko extends BaseGame implements AfterViewInit, OnDestroy {
       amountWon: profit > 0 ? profit : 0,
       amountLost: profit < 0 ? Math.abs(profit) : 0,
       amountBet: ball.bet,
-      wasAllIn: false,
+      wasAllIn: ball.wasAllIn,
       currentBalance: newBalance,
     });
 

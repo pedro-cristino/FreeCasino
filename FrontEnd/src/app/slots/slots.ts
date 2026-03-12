@@ -73,6 +73,7 @@ export class Slots extends BaseGame implements OnDestroy {
   profitLoss = computed(() => Math.round(this.history().reduce((sum, h) => sum + h.profit, 0) * 100) / 100);
 
   private lastBetAmount = 0;
+  private lastWasAllIn = false;
   private spinInterval: ReturnType<typeof setInterval> | null = null;
   private timeouts: ReturnType<typeof setTimeout>[] = [];
 
@@ -138,6 +139,7 @@ export class Slots extends BaseGame implements OnDestroy {
 
     const betAmount = this.bet();
     this.lastBetAmount = betAmount;
+    this.lastWasAllIn = betAmount === this.balance();
     this.balance.update(b => b - betAmount);
     this.phase.set(SlotsPhase.SPINNING);
     this.message.set('Bonne chance !');
@@ -206,7 +208,7 @@ export class Slots extends BaseGame implements OnDestroy {
       amountWon: profit > 0 ? profit : 0,
       amountLost: profit < 0 ? Math.abs(profit) : 0,
       amountBet: betAmount,
-      wasAllIn: false,
+      wasAllIn: this.lastWasAllIn,
       currentBalance: newBalance,
     });
     this.message.set(msg);

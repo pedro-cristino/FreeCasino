@@ -69,6 +69,7 @@ export class Roulette extends BaseGame implements OnInit {
   selectedChip = 10;
   allInSelected = false;
   isSpinning = false;
+  private lastWasAllIn = false;
   hoveredKey = '';
   private _hoveredNums = new Set<number>();
   private lastBets: Record<string, number> = {};
@@ -408,6 +409,7 @@ export class Roulette extends BaseGame implements OnInit {
     if (!this.canSpin()) return;
     this.lastBets = { ...this.gameState().bets };
     const total = this.totalBet();
+    this.lastWasAllIn = total === this.gameState().balance;
     this.isSpinning = true;
     this.gameState.update(s => ({
       ...s,
@@ -444,7 +446,7 @@ export class Roulette extends BaseGame implements OnInit {
       amountWon: profit > 0 ? profit : 0,
       amountLost: profit < 0 ? Math.abs(profit) : 0,
       amountBet: totalBet,
-      wasAllIn: false,
+      wasAllIn: this.lastWasAllIn,
       currentBalance: newBalance,
     });
     this.gameState.update(s => ({
